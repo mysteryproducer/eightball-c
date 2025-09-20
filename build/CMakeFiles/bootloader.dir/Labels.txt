@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/CMakeFiles/bootloader
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/CMakeFiles/bootloader.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/CMakeFiles/bootloader-complete.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
