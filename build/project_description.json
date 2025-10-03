@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "empty-8ball",
-    "project_version":    "1",
+    "project_version":    "b83f5e4-dirty",
     "project_path":       "/Users/mysteryproducer/Documents/dev/iot/empty-8ball",
     "idf_path":           "/Users/mysteryproducer/esp/v5.5.1/esp-idf",
     "build_dir":          "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build",
@@ -1285,7 +1285,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_gc9a01", "espressif__mpu6050" ],
             "file": "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/build/esp-idf/main/libmain.a",
-            "sources": [ "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/main.c", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/tft.c", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/cf_grammar_gen.cpp" ],
+            "sources": [ "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/main.c", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/tft.cpp", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/cf_grammar_gen.cpp", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/font.cpp", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/files.cpp", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/accelerometer.cpp", "/Users/mysteryproducer/Documents/dev/iot/empty-8ball/main/source/coordinator.cpp" ],
             "include_dirs": [ "includes" ]
         },
         "mbedtls": {

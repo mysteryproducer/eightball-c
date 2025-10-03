@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <ctime>
-
 #include "esp_log.h"
-#include "esp_spiffs.h"
+#include "esp_system.h"
 
-#include "gen.hpp"
 #include "gen.h"
 #include "main.h"
-#include "files.h"
 
-GrammarGenerator::GrammarGenerator(char *file) {
+using namespace EightBall;
+
+GrammarGenerator::GrammarGenerator(const char *file) {
     //seed prng
     srand(time(0));
     this->readFile(file);
@@ -54,9 +53,9 @@ string GrammarGenerator::getRandomElement(vector<string> *items) {
     return items->at(index);
 }
 
-void GrammarGenerator::readFile(char* filename) {
+void GrammarGenerator::readFile(const char* filename) {
     if (init_filesystem() != ESP_OK) {
-        ESP_LOGE(TAG,"File system setup fail!",filename);
+        ESP_LOGE(TAG,"File system setup fail!");
         return;
     }
     FILE *file = fopen(filename, "r");
@@ -95,7 +94,7 @@ void GrammarGenerator::readFile(char* filename) {
         }
         fclose(file);
     }
-    esp_vfs_spiffs_unregister(NULL);
+    close_filesystem();
 }
 
 void test_gen() 
@@ -114,5 +113,5 @@ void test_gen()
         }
         fclose(file);
     }
-    esp_vfs_spiffs_unregister(NULL);
+    close_filesystem();
 }
