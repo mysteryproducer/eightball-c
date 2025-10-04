@@ -8,25 +8,34 @@
 #include "main.h"
 
 using namespace EightBall;
+using namespace std;
 
 GrammarGenerator::GrammarGenerator(const char *file) {
     //seed prng
-    srand(time(0));
     this->readFile(file);
 }
+//GrammarGenerator::~GrammarGenerator() {}
+//virtual ~TextGenerator::TextGenerator() {}
 
 string GrammarGenerator::generateNext() {
+    srand(time(0));
     string outer=getRandomElement(&this->templates);
     int subIndex=outer.find('{');
-    while (subIndex>0) {
+    while (subIndex != string::npos) {
         int endIndex=outer.find('}',subIndex+1);
-        if (endIndex<0) {
+        if (endIndex == string::npos) {
             break;
         }
         string key=outer.substr(subIndex+1,endIndex-subIndex-1);
         
         vector<string> *options=this->getOptions(key);
-        string insert=this->getRandomElement(options);
+        string insert="";
+        if (options!=NULL && options->size() > 0) { 
+            insert=this->getRandomElement(options);
+            if (outer[endIndex+1] != ' ') {
+                insert+=' ';
+            }
+        }
         outer.replace(subIndex,endIndex-subIndex+1,insert);
     }
     return outer;
@@ -45,7 +54,9 @@ vector<string> *GrammarGenerator::getOptions(string key) {
     string lastKey=key.substr(lastPos,key.length()-lastPos);
     keys.push_back(lastKey);
     string finalKey=this->getRandomElement(&keys);
-    return &this->substitutions[finalKey];
+//    ESP_LOGI(TAG,"going with key %s",finalKey.c_str());
+    vector<string> *result = this->substitutions[finalKey];
+    return result;
 }
 
 string GrammarGenerator::getRandomElement(vector<string> *items) {
@@ -54,11 +65,13 @@ string GrammarGenerator::getRandomElement(vector<string> *items) {
 }
 
 void GrammarGenerator::readFile(const char* filename) {
+    ESP_LOGI(TAG,"Reading file %s",filename);
     if (init_filesystem() != ESP_OK) {
         ESP_LOGE(TAG,"File system setup fail!");
         return;
     }
     FILE *file = fopen(filename, "r");
+    size_t found=0;
     if(file ==NULL)
     {
         ESP_LOGE(TAG,"File %s does not exist!",filename);
@@ -75,17 +88,21 @@ void GrammarGenerator::readFile(const char* filename) {
                 delete line;
                 continue;
             }
+            while(line->ends_with('\r') || line->ends_with('\n')) {
+                line->pop_back();
+            }
+            found++;
             if (line->at(0)=='[') {
                 int endix=line->find("]");
                 string key=line->substr(1,endix-1);
                 line->erase(0,endix+1);
                 auto iterator=this->substitutions.find(key);
-                vector<string> *sublist=NULL;
+                vector<string> *sublist = NULL;
                 if (iterator==this->substitutions.end()) {
                     sublist=new vector<string>();
-                    this->substitutions[key]=*sublist;
+                    this->substitutions[key] = sublist;
                 } else {
-                    sublist=&iterator->second;
+                    sublist = iterator->second;
                 }
                 sublist->push_back(*line);
             } else {
@@ -95,23 +112,24 @@ void GrammarGenerator::readFile(const char* filename) {
         fclose(file);
     }
     close_filesystem();
+    ESP_LOGI(TAG,"Finished reading file %s. %i lines processed.",filename,found);
 }
 
-void test_gen() 
-{
-    FILE *file = fopen("/files/dsm5.txt", "r");
-    if(file ==NULL)
-    {
-        ESP_LOGE(TAG,"File does not exist!");
-    }
-    else 
-    {
-        char line[256];
-        while(fgets(line, sizeof(line), file) != NULL)
-        {
-            printf(line);
-        }
-        fclose(file);
-    }
-    close_filesystem();
-}
+// void test_gen() 
+// {
+//     FILE *file = fopen("/files/dsm5.txt", "r");
+//     if(file ==NULL)
+//     {
+//         ESP_LOGE(TAG,"File does not exist!");
+//     }
+//     else 
+//     {
+//         char line[256];
+//         while(fgets(line, sizeof(line), file) != NULL)
+//         {
+//             printf(line);
+//         }
+//         fclose(file);
+//     }
+//     close_filesystem();
+// }

@@ -4,34 +4,58 @@
 #include "esp_lcd_gc9a01.h"
 #include "driver/spi_master.h"
 #include <string>
+#include <map>
 #include <vector>
+
+using namespace std;
 
 namespace EightBall {
 
 typedef struct {
     int xPos;
     int yPos;
-    std::string line;
+    string line;
 } DisplayLine;
 
 typedef struct {
-    uint8_t ordinal;
-    uint8_t *bitmap;
-} LetterBitmap;
+    float screen_diameter;// =self.tft.height - 10
+    float radius;// = screen_diameter / 2
+    size_t center_y;// = radius
+
+    size_t max_lines;
+    size_t start_y;
+    vector<size_t> *positions;
+} FontMetrics;
+
+typedef struct {
+    size_t x;
+    size_t y;
+    size_t width;
+    size_t height;
+} Rectangle;
+
+typedef struct {
+    uint8_t high;
+    uint8_t low;
+} Colour565;
+
+class EightBallScreen;
 
 class Font {
     public:
         Font(const char *filePath);
         uint8_t getWidth();
         uint8_t getHeight();
-        uint8_t *write(std::string text,short foreColour,short backColour);
-        void writeTo(uint8_t *buffer, int x, int y, int width, int height, std::string text, short foreColour, short backColour);
-        esp_err_t loadFonts(vector<string> files);
+        uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
+        void writeText(uint8_t *buffer, EightBallScreen *screen, vector<DisplayLine *> *layout);
+        void writeTo(uint8_t *buffer, size_t width, size_t height, 
+            string text, int x, int y, 
+            const Colour565 *foreColour, const Colour565 *backColour);
     protected:
         Font();
         uint8_t width;
         uint8_t height;
-        std::vector<LetterBitmap> bitmaps;
+        map<uint8_t,uint8_t*> bitmaps;
         int bytesPerChar;
     private:
         bool loadFont(const char *path);
@@ -39,28 +63,38 @@ class Font {
 
 class EightBallScreen {
     public:
+        const int BYTES_PER_PIX=2;
+        constexpr static const Colour565 foreColour = {.high=0xff,.low=0xff};
+        constexpr static const Colour565 backColour = {.high=0x31,.low=0x1e};
+
         EightBallScreen(lcd_config config,esp_err_t *result);
         esp_err_t setScreenPower(bool screenOn);
-        esp_err_t redrawScreen();
-        esp_err_t drawText(std::string text);
+        esp_err_t redrawScreen(bool write=true);
+        esp_err_t drawText(string text);
         esp_err_t loadFonts(vector<string> files);
-        int getWidth();
-        int getHeight();
+        size_t getWidth();
+        size_t getHeight();
+        unsigned short background();
+        unsigned short foreground();
+
     private:
-        const int BYTES_PER_PIX=2;
         SemaphoreHandle_t semaphore = NULL;
         esp_lcd_panel_io_handle_t io_handle = NULL;
         esp_lcd_panel_handle_t panel_handle = NULL;
-        std::vector<Font *> fonts;
         uint8_t powerPin;
-        int width;
-        int height;
-        uint8_t *screenBuffer;
-        uint8_t byte_per_pixel;
-
         esp_err_t setupScreen(lcd_config config);
         esp_err_t setupPowerPin();
-        std::vector<DisplayLine> layoutText(std::string displayText);
+
+        vector<Font *> fonts;
+        size_t width;
+        size_t height;
+        uint8_t *screenBuffer;
+        Rectangle lastDrawBounds;
+
+        map<int,FontMetrics *> metrics;
+        vector<DisplayLine*> *layoutText(string displayText);
+        FontMetrics *getLinePositions(size_t font_height);
+        vector<DisplayLine *> *layoutTextInCircle(vector<string> *words,Font *font);
 };
 
 };

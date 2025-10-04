@@ -12,7 +12,6 @@
 #include "tft.h"
 
 using namespace EightBall;
-const int LCD_BIT_PER_PIXEL = 16;
 // IRAM_ATTR static bool notify_refresh_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 // {
 //     //ESP_LOGI("gc9a01", "refresh ready");
@@ -58,7 +57,7 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     ESP_LOGI(TAG, "Initialize SPI bus");
     const spi_bus_config_t buscfg = 
         GC9A01_PANEL_BUS_SPI_CONFIG(config.clk_pin, config.mosi_pin,
-                                    config.width * config.height * LCD_BIT_PER_PIXEL / 8);
+                                    config.width * config.height * EightBallScreen::BYTES_PER_PIX);
     esp_err_t result = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
     if (result!=ESP_OK) {
         return result;
@@ -81,7 +80,7 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = config.reset_pin,
         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
-        .bits_per_pixel = LCD_BIT_PER_PIXEL,
+        .bits_per_pixel = (size_t)(8 * EightBallScreen::BYTES_PER_PIX),
         .vendor_config = &vendor_cfg
     };
     result = esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &this->panel_handle);
@@ -105,7 +104,7 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
 }
 
 // #3120f5 = 0x311e
-esp_err_t EightBallScreen::redrawScreen() {
+esp_err_t EightBallScreen::redrawScreen(bool write) {
     //try {
 //        this->semaphore = xSemaphoreCreateBinary();
 //        int whole_buffer = this->width * this->height * EightBallScreen::BYTES_PER_PIX;
@@ -116,14 +115,16 @@ esp_err_t EightBallScreen::redrawScreen() {
         for (int j = 0; j < this->height; j++) {
             for (int i = 0; i < bpl; i+=2) {
                 int index = bpl * j + i;
-                buf[index] = 0x31;
-                buf[index+1] = 0x1e;
+                buf[index] = EightBallScreen::backColour.high;
+                buf[index+1] = EightBallScreen::backColour.low;
             }
         }
-        ESP_LOGI(TAG,"drawing %i x %i pixels from %i, %i",this->width,this->height,0,0);
-        esp_err_t res=esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, buf);
-        if (res!=ESP_OK) {
-            ESP_LOGW(TAG, "Draw fail!");
+        if (write) {
+//            ESP_LOGI(TAG,"drawing %i x %i pixels from %i, %i",this->width,this->height,0,0);
+            esp_err_t res=esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, buf);
+            if (res!=ESP_OK) {
+                ESP_LOGW(TAG, "Draw fail!");
+            }
         }
 //        xSemaphoreTake(this->semaphore, portMAX_DELAY);
 //        free(buf);
@@ -147,9 +148,9 @@ esp_err_t EightBallScreen::loadFonts(vector<string> files) {
     return ESP_OK;
 }
 
-int EightBallScreen::getWidth() {
+size_t EightBallScreen::getWidth() {
     return this->width;
 }
-int EightBallScreen::getHeight() {
+size_t EightBallScreen::getHeight() {
     return this->height;
 }

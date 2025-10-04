@@ -1,9 +1,10 @@
 idf_component_register(SRCS "source/main.c" 
-                        "source/tft.cpp" 
+                        "source/screen/tft.cpp" 
                         "source/cf_grammar_gen.cpp" 
-                        "source/font.cpp" 
+                        "source/screen/font.cpp" 
                         "source/files.cpp" 
                         "source/accelerometer.cpp"
                         "source/coordinator.cpp"
+                        "source/screen/layout.cpp"
                     INCLUDE_DIRS "includes")
 spiffs_create_partition_image(storage ../files FLASH_IN_PROJECT)

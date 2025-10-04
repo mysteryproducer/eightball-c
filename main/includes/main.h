@@ -31,8 +31,6 @@ typedef struct {
     int height;
 } lcd_config;
 esp_err_t init_screen(lcd_config config);
-// esp_err_t set_screen_power(bool power_on);
-// esp_err_t draw_blank_blue();
 
 /* Accelerometer calls */
 typedef struct {
@@ -43,6 +41,8 @@ typedef struct {
 // uint8_t get_mpu6050_id();
 esp_err_t setup_8ball_mpu6050(mpu6050_cfg config);
 // double read_g_load();
+esp_err_t init_generator(const char *filename);
+esp_err_t load_fonts(const char* files[],size_t num_files);
 
 void on_timer(void *args);
 

@@ -48,7 +48,10 @@
     "unordered_map": "cpp",
     "vector": "cpp",
     "cstdint": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "thread": "cpp",
+    "__bit_reference": "cpp",
+    "text_encoding": "cpp"
   },
   "idf.currentSetup": "/Users/mysteryproducer/esp/v5.5.1/esp-idf"
 }

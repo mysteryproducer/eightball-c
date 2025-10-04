@@ -66,6 +66,12 @@ void app_main(void)
 //        uint8_t device_id = get_mpu6050_id();
 //        ESP_LOGI(TAG, "Connected to MPU6050: %i", device_id);
     }
+    init_generator("/files/dsm5.txt");
+    const char *files[3];
+    files[0]="/files/monaco14.bin";
+    files[1]="/files/monaco20.bin";
+    files[2]="/files/monaco28.bin";
+    load_fonts(files,3);
 
 //    draw_blank_blue();
 
