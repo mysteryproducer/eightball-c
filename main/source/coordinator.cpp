@@ -66,16 +66,10 @@ esp_err_t init_generator(const char *filename) {
 esp_err_t load_fonts(const char *filenames[],size_t num_files) {
     vector<string> pathVector;
     for (int i=0;i<num_files;++i) {
-        ESP_LOGI(TAG,"file %i: %s",i,filenames[i]);
         pathVector.push_back(filenames[i]);
     }
     return eightBall.getScreen()->loadFonts(pathVector);
 }
-
-
-// double read_g_load() {
-//     return eightBall.getAccelerometer()->getGLoad();
-// }
 
 void on_timer(void *args) {
     double g_load=eightBall.getAccelerometer()->getGLoad();

@@ -46,11 +46,20 @@ class Font {
         Font(const char *filePath);
         uint8_t getWidth();
         uint8_t getHeight();
-        uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
+        //uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
         void writeText(uint8_t *buffer, EightBallScreen *screen, vector<DisplayLine *> *layout);
         void writeTo(uint8_t *buffer, size_t width, size_t height, 
             string text, int x, int y, 
             const Colour565 *foreColour, const Colour565 *backColour);
+        void drawLetter(char character, uint8_t *buffer, const Colour565 *foreColour, const Colour565 *backColour);
+        void drawLetter(char character, uint8_t *buffer, size_t bufferWidth, size_t bufferHeight, size_t x, size_t y, const Colour565 *foreColour, const Colour565 *backColour);
+
+        inline bool operator<(const Font* other) {
+            return this->width <other->width;
+        }
+        inline bool operator>(const Font* other) { return other < this; }
+        inline bool operator<=(const Font* other) { return !(this > other); }
+        inline bool operator>=(const Font* other) { return !(this < other); }
     protected:
         Font();
         uint8_t width;

@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "tft.h"
+#include <algorithm>
 
 using namespace EightBall;
 // IRAM_ATTR static bool notify_refresh_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
@@ -98,7 +99,7 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
 
     if (result == ESP_OK) {
         result = setScreenPower(true);
-        //this->redrawScreen();
+        this->redrawScreen();
     }
     return result;
 }
@@ -144,6 +145,8 @@ esp_err_t EightBallScreen::loadFonts(vector<string> files) {
         Font *f = new Font(files[i].c_str());
         this->fonts.push_back(f);
     }
+    sort(this->fonts.begin(),this->fonts.end());
+    reverse(this->fonts.begin(),this->fonts.end());
     close_filesystem();
     return ESP_OK;
 }

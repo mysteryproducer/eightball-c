@@ -7,6 +7,13 @@
 using namespace std;
 using namespace EightBall;
 
+void deleteLines(vector <DisplayLine *> *layout) {
+    for (DisplayLine *dl : *layout) {
+        delete dl;
+    }
+    delete layout;
+}
+
 void splitString(string text,vector<string> *words) {
     size_t pos = text.find(' ');
     while (pos != string::npos) {
@@ -60,10 +67,7 @@ esp_err_t EightBallScreen::drawText(string text) {
             }
             //calculateBounds()
             esp_err_t res=esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, this->screenBuffer);
-            for (DisplayLine *dl : *layout) {
-                delete dl;
-            }
-            delete layout;
+            deleteLines(layout);
             return res;
         }
     }
@@ -143,7 +147,7 @@ vector<DisplayLine *> *EightBallScreen::layoutTextInCircle(vector<string> *words
         }
     }
     if (word_index < words->size()) {
-        delete lines;
+        deleteLines(lines);
         return NULL;
     }
     //eliminate gaps

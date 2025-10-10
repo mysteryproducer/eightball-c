@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <set>
 #include "main.h"
 #include "tft.h"
 #include "math.h"
@@ -54,15 +55,17 @@ bool Font::loadFont(const char *path) {
     close_filesystem();
     return result;
 }
-uint8_t *Font::write(string text,const Colour565 *foreColour,const Colour565 *backColour) {
-    size_t bmWidth=this->width*text.length();
-    size_t bufferSize=bmWidth * this->height;
-    uint8_t *result=(uint8_t *)malloc(2 * bufferSize);
-    this->writeTo(result,0,0,
-        text,bmWidth,this->height,
-        foreColour,backColour);
-    return result;
-}
+// uint8_t *Font::write(string text,const Colour565 *foreColour,const Colour565 *backColour) {
+//     size_t bmWidth=this->width*text.length();
+//     size_t bufferSize=bmWidth * this->height;
+//     uint8_t *result=(uint8_t *)malloc(2 * bufferSize);
+//     for (int k=0;k<text.length();++k) {
+//         for(int j=0;j<this->)
+//     }
+//     uint8_t next_c=text[k];
+
+//     return result;
+// }
 
 void Font::writeText(uint8_t *buffer, EightBallScreen *screen, vector<DisplayLine *> *layout) {
     size_t width=screen->getWidth();
@@ -74,46 +77,99 @@ void Font::writeText(uint8_t *buffer, EightBallScreen *screen, vector<DisplayLin
     }
 }
 
-//This algorithm depends on glyph width being a multiple of 4
-//buffer is the destination buffer.
-//x, y are the screen coords to start printing.
-//width, height are the screen dimensions of the buffer.
 void Font::writeTo(uint8_t *buffer, size_t width, size_t height, string text, int x, int y, const Colour565 *foreColour, const Colour565 *backColour) {
-    size_t start_mem_offset=y * width + x;
-    size_t lines_to_draw=min((int)this->height,(int)height-y);
-    for (size_t k=0;k<text.length();++k) {
-        //for each letter. Grab its index from the vector:
-        uint8_t next_c=text[k];
-        auto search = this->bitmaps.find(next_c);
-        if (search != this->bitmaps.end()) {
-            //if it has a bitmap:
-            uint8_t *char_bits = search->second;
-            //Keep the current byte of data in scope across row/column loop.
-            uint8_t current_byte;
-            for (uint8_t j=0;j<lines_to_draw;++j) {
-                //for each row...
-                for (uint8_t i=0;i<this->width;i+=4) {
-                    //for each column. We're stepping by half 
-                    current_byte = char_bits[(j * this->width + i)/8];
-//                    ESP_LOGI(TAG,"draw %i",current_byte);
-                    int base_offset=start_mem_offset + i*2;
-                    const Colour565 *colour = (current_byte & 0x08)?foreColour:backColour;
-                    buffer[base_offset] = colour->high;
-                    buffer[base_offset + 1] = colour->low;
-                    colour = (current_byte & 0x04)?foreColour:backColour;
-                    buffer[base_offset + 2] = colour->high;
-                    buffer[base_offset + 3] = colour->low;
-                    colour = (current_byte & 0x02)?foreColour:backColour;
-                    buffer[base_offset + 4] = colour->high;
-                    buffer[base_offset + 5] = colour->low;
-                    colour = (current_byte & 0x01)?foreColour:backColour;
-                    buffer[base_offset + 6] = colour->high;
-                    buffer[base_offset + 7] = colour->low;
-                }
-                start_mem_offset+=width;
-            }
+    //flipping the x-axis; start at the end and work backward.
+    x+=this->width * text.length();
+    for (int i=0;i<text.length();++i) {
+        char letter = text[i];
+        if (letter != ' ') {
+            this->drawLetter(text[i],buffer,width,height,x-i*this->width,y,foreColour,backColour);
         }
-        start_mem_offset+=this->width;
+    }
+}
+
+void Font::drawLetter(char character, uint8_t *buffer, const Colour565 *foreColour, const Colour565 *backColour) {
+    size_t bufsize=this->width*this->height*2;
+    size_t bytes_per_char = bufsize / 16;
+    auto search = this->bitmaps.find(character);
+    if (search != this->bitmaps.end()) {
+        //if it has a bitmap:
+        uint8_t *char_bits = search->second;
+        for (size_t offset=0;offset<bytes_per_char;offset+=2) {
+            size_t baseOffset = offset << 4;
+            uint8_t in_byte=char_bits[offset];
+            uint8_t in_byte2=char_bits[offset+1];
+            buffer[baseOffset+30] =  (in_byte & 128)?foreColour->high:backColour->high;
+            buffer[baseOffset+31] =  (in_byte & 128)?foreColour->low:backColour->low;
+            buffer[baseOffset+28] =  (in_byte & 64)?foreColour->high:backColour->high;
+            buffer[baseOffset+29] =  (in_byte & 64)?foreColour->low:backColour->low;
+            buffer[baseOffset+26] =  (in_byte & 32)?foreColour->high:backColour->high;
+            buffer[baseOffset+27] =  (in_byte & 32)?foreColour->low:backColour->low;
+            buffer[baseOffset+24] =  (in_byte & 16)?foreColour->high:backColour->high;
+            buffer[baseOffset+25] =  (in_byte & 16)?foreColour->low:backColour->low;
+            buffer[baseOffset+22] =  (in_byte & 8)?foreColour->high:backColour->high;
+            buffer[baseOffset+23] =  (in_byte & 8)?foreColour->low:backColour->low;
+            buffer[baseOffset+20] =  (in_byte & 4)?foreColour->high:backColour->high;
+            buffer[baseOffset+21] =  (in_byte & 4)?foreColour->low:backColour->low;
+            buffer[baseOffset+18] =  (in_byte & 2)?foreColour->high:backColour->high;
+            buffer[baseOffset+19] =  (in_byte & 2)?foreColour->low:backColour->low;
+            buffer[baseOffset+16] =  (in_byte & 1)?foreColour->high:backColour->high;
+            buffer[baseOffset+17] =  (in_byte & 1)?foreColour->low:backColour->low;
+            buffer[baseOffset+14] =  (in_byte2 & 128)?foreColour->high:backColour->high;
+            buffer[baseOffset+15] =  (in_byte2 & 128)?foreColour->low:backColour->low;
+            buffer[baseOffset+12] =  (in_byte2 & 64)?foreColour->high:backColour->high;
+            buffer[baseOffset+13] =  (in_byte2 & 64)?foreColour->low:backColour->low;
+            buffer[baseOffset+10] =  (in_byte2 & 32)?foreColour->high:backColour->high;
+            buffer[baseOffset+11] =  (in_byte2 & 32)?foreColour->low:backColour->low;
+            buffer[baseOffset+8] =  (in_byte2 & 16)?foreColour->high:backColour->high;
+            buffer[baseOffset+9] =  (in_byte2 & 16)?foreColour->low:backColour->low;
+            buffer[baseOffset+6] =  (in_byte2 & 8)?foreColour->high:backColour->high;
+            buffer[baseOffset+7] =  (in_byte2 & 8)?foreColour->low:backColour->low;
+            buffer[baseOffset+4] =  (in_byte2 & 4)?foreColour->high:backColour->high;
+            buffer[baseOffset+5] =  (in_byte2 & 4)?foreColour->low:backColour->low;
+            buffer[baseOffset+2] =  (in_byte2 & 2)?foreColour->high:backColour->high;
+            buffer[baseOffset+3] =  (in_byte2 & 2)?foreColour->low:backColour->low;
+            buffer[baseOffset] =  (in_byte2 & 1)?foreColour->high:backColour->high;
+            buffer[baseOffset+1] =  (in_byte2 & 1)?foreColour->low:backColour->low;
+        }
+    }
+}
+void Font::drawLetter(char character, uint8_t *buffer, size_t bufferWidth, size_t bufferHeight, size_t x, size_t y, const Colour565 *foreColour, const Colour565 *backColour) {
+    auto search = this->bitmaps.find(character);
+    //if it has a bitmap:
+    if (search != this->bitmaps.end()) {
+        size_t bytes_per_char = this->width * this->height / 8;
+        //The x-axis needs flipping. Start at the end of the string and move backwards:
+//        x += this->width;
+        uint8_t *char_bits = search->second;
+        for (size_t i=0;i<bytes_per_char;++i) {
+            size_t current_row = y + i*8/this->width;
+            size_t current_column = x - i*8 % this->width;
+            size_t baseOffset = (current_row*bufferWidth + current_column)*2; //(byte * 8) / (width * 2)
+
+            uint8_t in_byte=char_bits[i^1];
+            buffer[baseOffset-6] = (in_byte & 8)?foreColour->high:backColour->high;
+            buffer[baseOffset-7] = (in_byte & 8)?foreColour->low:backColour->low;
+            buffer[baseOffset-4] = (in_byte & 4)?foreColour->high:backColour->high;
+            buffer[baseOffset-5] = (in_byte & 4)?foreColour->low:backColour->low;
+            buffer[baseOffset-2] = (in_byte & 2)?foreColour->high:backColour->high;
+            buffer[baseOffset-3] = (in_byte & 2)?foreColour->low:backColour->low;
+            buffer[baseOffset] = (in_byte & 1)?foreColour->high:backColour->high;
+            buffer[baseOffset-1] = (in_byte & 1)?foreColour->low:backColour->low;
+
+            current_row = y + (i*8+4)/this->width;
+            current_column = x - (i*8+4) % this->width;
+            baseOffset = (current_row*bufferWidth + current_column)*2;
+            buffer[baseOffset-6] = (in_byte & 128)?foreColour->high:backColour->high;
+            buffer[baseOffset-7] = (in_byte & 128)?foreColour->low:backColour->low;
+            buffer[baseOffset-4] = (in_byte & 64)?foreColour->high:backColour->high;
+            buffer[baseOffset-5] = (in_byte & 64)?foreColour->low:backColour->low;
+            buffer[baseOffset-2] = (in_byte & 32)?foreColour->high:backColour->high;
+            buffer[baseOffset-3] = (in_byte & 32)?foreColour->low:backColour->low;
+            buffer[baseOffset] = (in_byte & 16)?foreColour->high:backColour->high;
+            buffer[baseOffset-1] = (in_byte & 16)?foreColour->low:backColour->low;
+
+        }
     }
 }
 
