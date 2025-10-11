@@ -143,31 +143,31 @@ void Font::drawLetter(char character, uint8_t *buffer, size_t bufferWidth, size_
 //        x += this->width;
         uint8_t *char_bits = search->second;
         for (size_t i=0;i<bytes_per_char;++i) {
-            size_t current_row = y + i*8/this->width;
-            size_t current_column = x - i*8 % this->width;
+            uint8_t in_byte=char_bits[i^1];
+            size_t current_row = y + (i*8)/this->width;
+            size_t current_column = x - this->width + (i*8) % this->width;
             size_t baseOffset = (current_row*bufferWidth + current_column)*2; //(byte * 8) / (width * 2)
 
-            uint8_t in_byte=char_bits[i^1];
-            buffer[baseOffset-6] = (in_byte & 8)?foreColour->high:backColour->high;
-            buffer[baseOffset-7] = (in_byte & 8)?foreColour->low:backColour->low;
-            buffer[baseOffset-4] = (in_byte & 4)?foreColour->high:backColour->high;
-            buffer[baseOffset-5] = (in_byte & 4)?foreColour->low:backColour->low;
-            buffer[baseOffset-2] = (in_byte & 2)?foreColour->high:backColour->high;
-            buffer[baseOffset-3] = (in_byte & 2)?foreColour->low:backColour->low;
-            buffer[baseOffset] = (in_byte & 1)?foreColour->high:backColour->high;
-            buffer[baseOffset-1] = (in_byte & 1)?foreColour->low:backColour->low;
+            buffer[baseOffset-6] = (in_byte & 1)?foreColour->high:backColour->high;
+            buffer[baseOffset-7] = (in_byte & 1)?foreColour->low:backColour->low;
+            buffer[baseOffset-4] = (in_byte & 2)?foreColour->high:backColour->high;
+            buffer[baseOffset-5] = (in_byte & 2)?foreColour->low:backColour->low;
+            buffer[baseOffset-2] = (in_byte & 4)?foreColour->high:backColour->high;
+            buffer[baseOffset-3] = (in_byte & 4)?foreColour->low:backColour->low;
+            buffer[baseOffset] = (in_byte & 8)?foreColour->high:backColour->high;
+            buffer[baseOffset-1] = (in_byte & 8)?foreColour->low:backColour->low;
 
             current_row = y + (i*8+4)/this->width;
-            current_column = x - (i*8+4) % this->width;
+            current_column = x - this->width + (i*8+4) % this->width;
             baseOffset = (current_row*bufferWidth + current_column)*2;
-            buffer[baseOffset-6] = (in_byte & 128)?foreColour->high:backColour->high;
-            buffer[baseOffset-7] = (in_byte & 128)?foreColour->low:backColour->low;
-            buffer[baseOffset-4] = (in_byte & 64)?foreColour->high:backColour->high;
-            buffer[baseOffset-5] = (in_byte & 64)?foreColour->low:backColour->low;
-            buffer[baseOffset-2] = (in_byte & 32)?foreColour->high:backColour->high;
-            buffer[baseOffset-3] = (in_byte & 32)?foreColour->low:backColour->low;
-            buffer[baseOffset] = (in_byte & 16)?foreColour->high:backColour->high;
-            buffer[baseOffset-1] = (in_byte & 16)?foreColour->low:backColour->low;
+            buffer[baseOffset-6] = (in_byte & 16)?foreColour->high:backColour->high;
+            buffer[baseOffset-7] = (in_byte & 16)?foreColour->low:backColour->low;
+            buffer[baseOffset-4] = (in_byte & 32)?foreColour->high:backColour->high;
+            buffer[baseOffset-5] = (in_byte & 32)?foreColour->low:backColour->low;
+            buffer[baseOffset-2] = (in_byte & 64)?foreColour->high:backColour->high;
+            buffer[baseOffset-3] = (in_byte & 64)?foreColour->low:backColour->low;
+            buffer[baseOffset] = (in_byte & 128)?foreColour->high:backColour->high;
+            buffer[baseOffset-1] = (in_byte & 128)?foreColour->low:backColour->low;
 
         }
     }
