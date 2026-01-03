@@ -12,6 +12,8 @@
 #include "tft.h"
 #include <algorithm>
 
+static const char *TAG = "8 ball TFT";
+
 using namespace EightBall;
 // IRAM_ATTR static bool notify_refresh_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 // {
@@ -81,7 +83,9 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = config.reset_pin,
         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
+        .data_endian = LCD_RGB_DATA_ENDIAN_BIG,
         .bits_per_pixel = (size_t)(8 * EightBallScreen::BYTES_PER_PIX),
+        .flags = {},
         .vendor_config = &vendor_cfg
     };
     result = esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &this->panel_handle);

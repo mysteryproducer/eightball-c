@@ -17,6 +17,7 @@
 #include "event_source.h"
 #include "pins.h"
 
+static const char *TAG = "8 ball";
 
 /* Event source periodic timer related definitions */
 ESP_EVENT_DEFINE_BASE(TIMER_EVENTS);

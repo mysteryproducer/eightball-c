@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-static char *TAG = "8 ball";
+static const char *APP_TAG = "8 ball";
 
 /* Generator C calls */
 // void test_gen();
@@ -15,7 +15,7 @@ esp_err_t initialiseGenerator(char *type,char *config);
 // char *generateText();
 
 /* spi file system init */
-static char *FS_BASE = "/files";
+//static char *FS_BASE = "/files";
 esp_err_t init_filesystem();
 esp_err_t close_filesystem();
 

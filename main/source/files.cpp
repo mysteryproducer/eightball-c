@@ -3,7 +3,7 @@
 
 extern "C" {
 
-static char *FS_BASE = "/files";
+const char *FS_BASE = "/files";
 
 esp_err_t init_filesystem() {
     esp_vfs_spiffs_conf_t config = {

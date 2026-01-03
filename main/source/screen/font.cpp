@@ -9,6 +9,8 @@
 
 using namespace std;
 using namespace EightBall;
+
+static const char *TAG = "8 ball Font";
     
 Font::Font(const char *filePath) {
     this->loadFont(filePath);

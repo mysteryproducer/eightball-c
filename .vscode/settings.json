@@ -1,7 +1,7 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.espIdfPath": "/Users/mysteryproducer/esp/v5.5.1/esp-idf",
-  "idf.pythonInstallPath": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+  "idf.espIdfPath": "/Users/mysteryproducer/esp/v5.5.2/esp-idf",
+  "idf.pythonInstallPath": "/opt/local/bin/python",
   "idf.openOcdConfigs": [
     "board/esp32c6-builtin.cfg"
   ],

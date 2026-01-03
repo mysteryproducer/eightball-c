@@ -10,6 +10,8 @@
 using namespace EightBall;
 using namespace std;
 
+static const char *TAG = "8 ball grammar generator";
+
 GrammarGenerator::GrammarGenerator(const char *file) {
     //seed prng
     this->readFile(file);

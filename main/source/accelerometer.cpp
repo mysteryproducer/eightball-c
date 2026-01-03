@@ -5,6 +5,8 @@
 
 using namespace EightBall;
 
+static const char *TAG = "8 ball Accelerometer";
+
 Accelerometer::Accelerometer(mpu6050_cfg config,esp_err_t *result) {
     i2c_config_t i2c_cfg = {
         .mode = I2C_MODE_MASTER,
@@ -14,7 +16,8 @@ Accelerometer::Accelerometer(mpu6050_cfg config,esp_err_t *result) {
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         .master = {
             .clk_speed = config.clock_hz
-        }
+        },
+        .clk_flags = I2C_SCLK_SRC_FLAG_FOR_NOMAL
     };
 //    i2c_cfg.master
     esp_err_t setup_result=i2c_param_config(I2C_CHANNEL,&i2c_cfg);
@@ -25,7 +28,7 @@ Accelerometer::Accelerometer(mpu6050_cfg config,esp_err_t *result) {
     if (setup_result==ESP_OK) {
         this->setup_8ball_mpu6050();
         uint8_t address;
-        esp_err_t result = mpu6050_get_deviceid(this->accelerometer, &address);
+        setup_result = mpu6050_get_deviceid(this->accelerometer, &address);
         ESP_LOGI(TAG, "Connected to MPU6050: %i", address);
     }
     *result=setup_result;
