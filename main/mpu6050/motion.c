@@ -6,7 +6,6 @@ https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system
 */
 
 #include "mpu6050.h"
-//#include "motion.h"
 
 #include "driver/i2c.h"
 #include "driver/gpio.h"
