@@ -1,8 +1,9 @@
 #pragma once
-#include "main.h"
 #include "gen.h"
 #include "esp_lcd_gc9a01.h"
 #include "driver/spi_master.h"
+#include "driver/gpio.h"
+#include "gc9a01.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -43,6 +44,8 @@ class EightBallScreen;
 
 class Font {
     public:
+        static vector<Font *> *loadFonts(vector<string> *files);
+
         Font(const char *filePath);
         uint8_t getWidth();
         uint8_t getHeight();
@@ -80,21 +83,19 @@ class EightBallScreen {
         esp_err_t setScreenPower(bool screenOn);
         esp_err_t redrawScreen(bool write=true);
         esp_err_t drawText(string text);
-        esp_err_t loadFonts(vector<string> files);
+        esp_err_t loadFonts(vector<Font *> *fonts);
         size_t getWidth();
         size_t getHeight();
-        unsigned short background();
-        unsigned short foreground();
 
     private:
         SemaphoreHandle_t semaphore = NULL;
         esp_lcd_panel_io_handle_t io_handle = NULL;
         esp_lcd_panel_handle_t panel_handle = NULL;
-        uint8_t powerPin;
+        gpio_num_t powerPin;
         esp_err_t setupScreen(lcd_config config);
         esp_err_t setupPowerPin();
 
-        vector<Font *> fonts;
+        vector<Font *> *fonts;
         size_t width;
         size_t height;
         uint8_t *screenBuffer;

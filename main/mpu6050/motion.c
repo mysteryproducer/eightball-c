@@ -98,7 +98,7 @@ static void mpu6050_enter_wake_on_motion(void) {
 
     // Enable low-power accelerometer mode (cycle mode)
     // Sleep bit=0, Cycle=1, use internal 1.25Hz sampling
-    // bits 6-7: 0=1.25Hz, 1=2.5Hz, 2=5Hz, 3=10Hz
+    // bits 6-7: 0=1.25Hz, 1=2.5Hz, 2=5Hz, 3=10Hz. Go with 5Hz
     i2c_write_byte(MPU6050_REG_PWR_MGMT_2, 0x87); // disable gyro axes, keep accel only
     // bit5=1 → cycle mode, bit 3=1 → temp disable
     i2c_write_byte(MPU6050_REG_PWR_MGMT_1, 0x28);
@@ -111,19 +111,15 @@ static void clear_motion_interrupt(void) {
     i2c_read_byte(MPU6050_REG_INT_STATUS, &tmp);
 }
 
-void wake_loop(void) {
+void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint8_t)) {
     i2c_master_init();
-    mpu6050_enter_wake_on_motion();
 
     gpio_reset_pin(MPU_INT_GPIO);
     gpio_set_direction(MPU_INT_GPIO, GPIO_MODE_INPUT);
     gpio_pullup_en(MPU_INT_GPIO);
     gpio_pulldown_dis(MPU_INT_GPIO);
 
-    for (int i=0;i<10;++i) {
-        ESP_LOGI(TAG, "%i", 10-i);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
+    mpu6050_enter_wake_on_motion();
 
     while (true) {
 //        ESP_LOGI(TAG, "Entering light sleep... Move sensor to wake");
@@ -136,14 +132,15 @@ void wake_loop(void) {
 
         uint8_t status;
         i2c_read_byte(MPU6050_REG_INT_STATUS, &status); 
-        if (status == (MPU6050_MOTION_INT_BIT | MPU6050_ZERMOT_INT_BIT)) {
-            ESP_LOGI(TAG, "Woke from zero-motion and then motion interrupt!");
-        } else if (status == MPU6050_MOTION_INT_BIT) {
+        if (status & MPU6050_MOTION_INT_BIT) {
             ESP_LOGI(TAG, "Woke from motion interrupt!");
-        } else if (status == MPU6050_ZERMOT_INT_BIT) {
+            shakeCB();
+        } else if (status & MPU6050_ZERMOT_INT_BIT) {
             ESP_LOGI(TAG, "Woke from zero-motion interrupt!");
+            idleCB();
         } else {
             ESP_LOGI(TAG, "Woke from unknown reason, INT_STATUS=0x%02X", status);
+            otherCB(status);
         }
     }
 }

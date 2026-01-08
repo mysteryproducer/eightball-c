@@ -1,0 +1,44 @@
+#include "esp_log.h"
+#include <vector>
+#include <string>
+#include "tft.h"
+#include "gc9a01.h"
+#include "gen.h"
+
+using namespace EightBall;
+using namespace std;
+
+void * initScreen(lcd_config config) {
+    esp_err_t result;
+    EightBallScreen *screen = new EightBallScreen(config,&result);
+    if (result!=ESP_OK) {
+        delete screen;
+        return NULL;
+    }
+    vector<string> fontFiles = {
+        "/files/monaco14.bin",
+        "/files/monaco20.bin",
+        "/files/monaco28.bin"
+    };
+    vector<Font *> *fonts = Font::loadFonts(&fontFiles);
+    screen->loadFonts(fonts);
+    return (void *)screen;
+}
+
+void screenPower(void *screenHandle, bool screenOn) {
+    EightBallScreen *screen = (EightBallScreen *)screenHandle;
+    screen->setScreenPower(screenOn);
+}
+
+void * initGenerator() {
+    GrammarGenerator *gen = new GrammarGenerator("/files/dsm5.txt");
+    return (void *)gen;
+}
+
+void newText(void *genHandle, void *screenHandle) {
+    GrammarGenerator *gen = (GrammarGenerator *)genHandle;
+    EightBallScreen *screen = (EightBallScreen *)screenHandle;
+    string text = gen->generateNext();
+    screen->redrawScreen(false);
+    screen->drawText(text);
+}

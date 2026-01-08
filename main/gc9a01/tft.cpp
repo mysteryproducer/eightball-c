@@ -8,20 +8,13 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_gc9a01.h"
 
+#include "gc9a01.h"
 #include "tft.h"
 #include <algorithm>
 
 static const char *TAG = "8 ball TFT";
 
 using namespace EightBall;
-// IRAM_ATTR static bool notify_refresh_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
-// {
-//     //ESP_LOGI("gc9a01", "refresh ready");
-//     BaseType_t need_yield = pdFALSE;
-
-//     xSemaphoreGiveFromISR(refresh_finish, &need_yield);
-//     return (need_yield == pdTRUE);
-// }
 
 EightBallScreen::EightBallScreen(lcd_config config,esp_err_t *result) {
     this->powerPin = config.power_pin;
@@ -52,25 +45,36 @@ esp_err_t EightBallScreen::setupPowerPin() {
 }
 
 esp_err_t EightBallScreen::setScreenPower(bool power_on) {
-    return gpio_set_level((gpio_num_t)this->powerPin,power_on?1:0);
+    esp_err_t result = gpio_set_level((gpio_num_t)this->powerPin,power_on?1:0);
+    gpio_hold_en(this->powerPin);
+    return result;
 }
 
 esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     ESP_LOGI(TAG, "Initialize SPI bus");
-    const spi_bus_config_t buscfg = 
-        GC9A01_PANEL_BUS_SPI_CONFIG(config.clk_pin, config.mosi_pin,
-                                    config.width * config.height * EightBallScreen::BYTES_PER_PIX);
+    // Explicit bus config so we control max_transfer_sz (helps DMA/stride issues)
+    const spi_bus_config_t buscfg = {
+        .mosi_io_num = (int)config.mosi_pin,
+        .miso_io_num = -1,
+        .sclk_io_num = (int)config.clk_pin,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = (int)(config.width * config.height * EightBallScreen::BYTES_PER_PIX),
+    };
     esp_err_t result = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
     if (result!=ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize SPI bus");
         return result;
     }
     ESP_LOGI(TAG, "Install panel IO");
     esp_lcd_panel_io_spi_config_t io_config = 
         GC9A01_PANEL_IO_SPI_CONFIG(config.cs_pin, config.dc_pin, NULL, NULL);
-//            .pclk_hz=800 * 1000,
+    // Lower panel SPI clock to reduce signal integrity issues visible as vertical artifacts
+    io_config.pclk_hz = config.freq_hz; // 20 MHz
     // Attach the LCD to the SPI bus
-    result = esp_lcd_new_panel_io_spi(SPI2_HOST, &io_config, &this->io_handle);
+    result = esp_lcd_new_panel_io_spi(SPI2_HOST, &io_config, &io_handle);
     if (result!=ESP_OK) {
+        ESP_LOGE(TAG, "Failed to install panel IO");
         return result;
     }
     ESP_LOGI(TAG, "Install gc9a01 panel driver");
@@ -79,15 +83,16 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
         .init_cmds = gc9a01_init_cmds,
         .init_cmds_size = sizeof(gc9a01_init_cmds) / sizeof(gc9a01_init_cmds[0]),
     };
+    // Final working configuration: big-endian, RGB element order
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = config.reset_pin,
-        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
+        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_BGR,
         .data_endian = LCD_RGB_DATA_ENDIAN_BIG,
         .bits_per_pixel = (size_t)(8 * EightBallScreen::BYTES_PER_PIX),
         .flags = {},
         .vendor_config = &vendor_cfg
     };
-    result = esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &this->panel_handle);
+    result = esp_lcd_new_panel_gc9a01(io_handle, &panel_config, &panel_handle);
     if (result!=ESP_OK) { ESP_LOGE(TAG, "fail new screen"); }
     esp_lcd_panel_reset(panel_handle);
     if (result!=ESP_OK) { ESP_LOGW(TAG, "fail reset screen"); }
@@ -97,60 +102,49 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     if (result!=ESP_OK) { ESP_LOGW(TAG, "fail turn on screen"); }
 
     //this->byte_per_pixel = LCD_BIT_PER_PIXEL / 8;
-    uint32_t whole_buffer = this->width * this->height * EightBallScreen::BYTES_PER_PIX;
-    this->screenBuffer = (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
+    uint32_t whole_buffer = config.width * config.height * EightBallScreen::BYTES_PER_PIX;
+    screenBuffer = (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
+    if (screenBuffer == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate screen buffer (%u bytes)", whole_buffer);
+        return ESP_ERR_NO_MEM;
+    }
 
     if (result == ESP_OK) {
         result = setScreenPower(true);
-        this->redrawScreen();
+        ESP_LOGI(TAG, "Screen initialized. Drawing background.");
+        redrawScreen(true);
+    } else {
+        ESP_LOGE(TAG, "Failed to initialize screen");
     }
     return result;
 }
 
 // #3120f5 = 0x311e
 esp_err_t EightBallScreen::redrawScreen(bool write) {
-    //try {
-//        this->semaphore = xSemaphoreCreateBinary();
-//        int whole_buffer = this->width * this->height * EightBallScreen::BYTES_PER_PIX;
-//        uint8_t *buf =  (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
-        int bpl = EightBallScreen::BYTES_PER_PIX * this->width;
-        uint8_t *buf = this->screenBuffer;
+    size_t bpl = EightBallScreen::BYTES_PER_PIX * this->width;
+    uint8_t *buf = screenBuffer;
 
-        for (int j = 0; j < this->height; j++) {
-            for (int i = 0; i < bpl; i+=2) {
-                int index = bpl * j + i;
-                buf[index] = EightBallScreen::backColour.high;
-                buf[index+1] = EightBallScreen::backColour.low;
-            }
+    for (int j = 0; j < this->height; j++) {
+        size_t row_offset = (size_t)j * bpl;
+        for (size_t i = 0; i < bpl; i += 2) {
+            size_t index = row_offset + i;
+            buf[index] = backColour.high;
+            buf[index + 1] = backColour.low;
         }
-        if (write) {
-//            ESP_LOGI(TAG,"drawing %i x %i pixels from %i, %i",this->width,this->height,0,0);
-            esp_err_t res=esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, buf);
-            if (res!=ESP_OK) {
-                ESP_LOGW(TAG, "Draw fail!");
-            }
+    }
+    if (write) {
+        esp_err_t res = esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, this->width, this->height, buf);
+        if (res != ESP_OK) {
+            ESP_LOGW(TAG, "Draw fail: %d", res);
+        } else {
+            ESP_LOGI(TAG, "Draw ok");
         }
-//        xSemaphoreTake(this->semaphore, portMAX_DELAY);
-//        free(buf);
-//        vSemaphoreDelete(this->semaphore);
-    //} catch (const std::exception& e) {
-    //    ESP_LOGE(TAG,"Error repainting screen: %s" + e);
-    //}
+    }
     return ESP_OK;
 }
 
-esp_err_t EightBallScreen::loadFonts(vector<string> files) {
-    if (init_filesystem() != ESP_OK) {
-        ESP_LOGE(TAG,"File system setup fail!");
-        return ESP_ERR_INVALID_STATE;
-    }
-    for (int i=0;i<files.size();++i) {
-        Font *f = new Font(files[i].c_str());
-        this->fonts.push_back(f);
-    }
-    sort(this->fonts.begin(),this->fonts.end());
-    reverse(this->fonts.begin(),this->fonts.end());
-    close_filesystem();
+esp_err_t EightBallScreen::loadFonts(vector<Font *> *fonts) {
+    this->fonts = fonts;
     return ESP_OK;
 }
 

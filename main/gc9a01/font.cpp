@@ -1,9 +1,11 @@
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <set>
-#include "main.h"
+#include "esp_log.h"
+#include "files.h"
 #include "tft.h"
 #include "math.h"
 
@@ -11,7 +13,23 @@ using namespace std;
 using namespace EightBall;
 
 static const char *TAG = "8 ball Font";
-    
+
+vector<Font *> *EightBall::Font::loadFonts(vector<string> *files) {
+    vector<Font *> *result = new vector<Font *>();
+    if (init_filesystem() != ESP_OK) {
+        ESP_LOGE(TAG,"File system setup fail!");
+        return NULL;
+    }
+    for (int i=0;i<files->size();++i) {
+        Font *f = new Font((*files)[i].c_str());
+        result->push_back(f);
+    }
+    sort(result->begin(),result->end());
+    reverse(result->begin(),result->end());
+    close_filesystem();
+    return result;
+}
+
 Font::Font(const char *filePath) {
     this->loadFont(filePath);
 }

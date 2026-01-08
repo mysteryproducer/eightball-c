@@ -6,29 +6,12 @@
 #include "esp_spiffs.h"
 
 #include "gen.h"
-//#include "main.h"
+#include "files.h"
 
 using namespace EightBall;
 using namespace std;
 
 static const char *TAG = "8 ball grammar generator";
-
-const char *FS_BASE = "/files";
-
-esp_err_t init_filesystem() {
-    esp_vfs_spiffs_conf_t config = {
-        .base_path = FS_BASE,
-        .partition_label = NULL,
-        .max_files = 5,
-        .format_if_mount_failed = true,
-    };
-    return esp_vfs_spiffs_register(&config);
-}
-
-esp_err_t close_filesystem() {
-    return esp_vfs_spiffs_unregister(NULL);
-}
-
 
 GrammarGenerator::GrammarGenerator(const char *file) {
     this->readFile(file);

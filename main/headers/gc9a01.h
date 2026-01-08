@@ -4,9 +4,28 @@ extern "C" {
 #endif
 // Custom GC9A01 init sequence
 #include "esp_lcd_gc9a01.h"
+#include "driver/gpio.h"
 
-// Custom GC9A01 init sequence
-/*static const gc9a01_lcd_init_cmd_t gc9a01_init_cmds[] = {
+/* Screen C calls */
+typedef struct {
+    gpio_num_t clk_pin;
+    gpio_num_t mosi_pin;
+    gpio_num_t dc_pin;
+    gpio_num_t cs_pin;
+    gpio_num_t reset_pin;
+    gpio_num_t power_pin;
+    uint16_t width;
+    uint16_t height;
+    uint32_t freq_hz;
+} lcd_config;
+
+void * initScreen(lcd_config config);
+void * initGenerator();
+void newText(void *genHandle, void *screenHandle);
+void screenPower(void *screenHandle, bool powerOn);
+
+/* Custom GC9A01 init sequence
+static const gc9a01_lcd_init_cmd_t gc9a01_init_cmds[] = {
     {0xEF, NULL, 0, 0},
     {0xEB, (uint8_t[]){0x14}, 1, 0},
     {0xFE, NULL, 0, 0},

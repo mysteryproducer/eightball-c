@@ -1,3 +1,4 @@
+
 #include "esp_system.h"
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
@@ -6,7 +7,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_gc9a01.h"
 #include "esp_log.h"
-#include "screen.h"
+#include "gc9a01.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -41,88 +42,25 @@ typedef struct {
     uint8_t high;
     uint8_t low;
 } Colour565;
-//static const Colour565 foreColour = {.high=0xff,.low=0xff};
-// Use an explicit RGB565 blue (0x001F). Swap bytes if your panel expects little-endian data.
 static const Colour565 backColour = {.high=0x31, .low=0x1E};
-
-// Custom GC9A01 init sequence
-static const gc9a01_lcd_init_cmd_t gc9a01_init_cmds[] = {
-    {0xEF, NULL, 0, 0},
-    {0xEB, (uint8_t[]){0x14}, 1, 0},
-    {0xFE, NULL, 0, 0},
-    {0xEF, NULL, 0, 0},
-    {0xEB, (uint8_t[]){0x14}, 1, 0},
-
-    {0x84, (uint8_t[]){0x40}, 1, 0},
-    {0x85, (uint8_t[]){0xFF}, 1, 0},
-    {0x86, (uint8_t[]){0xFF}, 1, 0},
-    {0x87, (uint8_t[]){0xFF}, 1, 0},
-    {0x88, (uint8_t[]){0x0A}, 1, 0},
-    {0x89, (uint8_t[]){0x21}, 1, 0},
-    {0x8A, (uint8_t[]){0x00}, 1, 0},
-    {0x8B, (uint8_t[]){0x80}, 1, 0},
-    {0x8C, (uint8_t[]){0x01}, 1, 0},
-    {0x8D, (uint8_t[]){0x01}, 1, 0},
-    {0x8E, (uint8_t[]){0xFF}, 1, 0},
-    {0x8F, (uint8_t[]){0xFF}, 1, 0},
-
-    {0xB6, (uint8_t[]){0x00}, 1, 0},
-
-    {0x36, (uint8_t[]){0x08}, 1, 0},   // Memory Access Control
-    {0x3A, (uint8_t[]){0x05}, 1, 0},   // Pixel Format: RGB565
-
-    {0x90, (uint8_t[]){0x08,0x08,0x08,0x08}, 4, 0},
-    {0xBD, (uint8_t[]){0x06}, 1, 0},
-    {0xBC, (uint8_t[]){0x00}, 1, 0},
-    {0xFF, (uint8_t[]){0x60,0x01,0x04}, 3, 0},
-    {0xC3, (uint8_t[]){0x13}, 1, 0},
-    {0xC4, (uint8_t[]){0x13}, 1, 0},
-    {0xC9, (uint8_t[]){0x22}, 1, 0},
-    {0xBE, (uint8_t[]){0x11}, 1, 0},
-    {0xE1, (uint8_t[]){0x10,0x0E}, 2, 0},
-    {0xDF, (uint8_t[]){0x21,0x0C,0x02}, 3, 0},
-    {0xF0, (uint8_t[]){0x45,0x09,0x08,0x08,0x26,0x2A}, 6, 0},
-    {0xF1, (uint8_t[]){0x43,0x70,0x72,0x36,0x37,0x6F}, 6, 0},
-    {0xF2, (uint8_t[]){0x45,0x09,0x08,0x08,0x26,0x2A}, 6, 0},
-    {0xF3, (uint8_t[]){0x43,0x70,0x72,0x36,0x37,0x6F}, 6, 0},
-    {0xED, (uint8_t[]){0x1B,0x0B}, 2, 0},
-    {0xAE, (uint8_t[]){0x77}, 1, 0},
-    {0xCD, (uint8_t[]){0x63}, 1, 0},
-
-    {0x70, (uint8_t[]){0x07,0x07,0x04,0x0E,0x0F,0x09,0x07,0x08,0x03}, 9, 0},
-
-    {0xE8, (uint8_t[]){0x34}, 1, 0},
-    {0x62, (uint8_t[]){0x18,0x0D,0x71,0xED,0x70,0x70,0x18,0x0F,0x71,0xEF,0x70,0x70}, 12, 0},
-    {0x63, (uint8_t[]){0x18,0x11,0x71,0xF1,0x70,0x70,0x18,0x13,0x71,0xF3,0x70,0x70}, 12, 0},
-    {0x64, (uint8_t[]){0x28,0x29,0xF1,0x01,0xF1,0x00,0x07}, 7, 0},
-    {0x66, (uint8_t[]){0x3C,0x00,0xCD,0x67,0x45,0x45,0x10,0x00,0x00,0x00}, 10, 0},
-    {0x67, (uint8_t[]){0x00,0x3C,0x00,0x00,0x00,0x01,0x54,0x10,0x32,0x98}, 10, 0},
-    {0x74, (uint8_t[]){0x10,0x85,0x80,0x00,0x00,0x4E,0x00}, 7, 0},
-    {0x98, (uint8_t[]){0x3E,0x07}, 2, 0},
-
-    {0x35, NULL, 0, 0},   // TE ON
-    {0x21, NULL, 0, 0},   // Inversion ON
-    {0x11, NULL, 0, 120}, // Sleep Out + delay
-    {0x29, NULL, 0, 0},   // Display ON
-};
 
 esp_err_t redrawScreen(bool write);
 /* Production build: diagnostic helpers removed. */
 
-esp_err_t setupPowerPin(/*uint8_t powerPin*/) {
-    gpio_config_t cfg={
-        .pin_bit_mask = (uint64_t)(1 << powerPin),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    esp_err_t result = gpio_config(&cfg);
-    if (result!=ESP_OK) {
-        ESP_LOGW(TAG, "Faled to configure TFT pin: GPIO %i",powerPin);
-    }
-    return result;
-}
+// esp_err_t setupPowerPin(/*uint8_t powerPin*/) {
+//     gpio_config_t cfg={
+//         .pin_bit_mask = (uint64_t)(1 << powerPin),
+//         .mode = GPIO_MODE_OUTPUT,
+//         .pull_up_en = GPIO_PULLUP_DISABLE,
+//         .pull_down_en = GPIO_PULLDOWN_DISABLE,
+//         .intr_type = GPIO_INTR_DISABLE
+//     };
+//     esp_err_t result = gpio_config(&cfg);
+//     if (result!=ESP_OK) {
+//         ESP_LOGW(TAG, "Faled to configure TFT pin: GPIO %i",powerPin);
+//     }
+//     return result;
+// }
 
 esp_err_t setScreenPower(bool power_on) {
     return gpio_set_level((gpio_num_t)powerPin,power_on?1:0);
@@ -148,7 +86,7 @@ esp_err_t init_screen() {
     esp_lcd_panel_io_spi_config_t io_config = 
         GC9A01_PANEL_IO_SPI_CONFIG(config.cs_pin, config.dc_pin, NULL, NULL);
     // Lower panel SPI clock to reduce signal integrity issues visible as vertical artifacts
-    io_config.pclk_hz = 8000000; // 8 MHz
+    io_config.pclk_hz = 20000000; // 20 MHz
     // Attach the LCD to the SPI bus
     result = esp_lcd_new_panel_io_spi(SPI2_HOST, &io_config, &io_handle);
     if (result!=ESP_OK) {

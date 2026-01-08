@@ -58,8 +58,8 @@ esp_err_t EightBallScreen::drawText(string text) {
     vector<string> words;
 //split the string
     splitString(text,&words);
-    for (int i=0;i < this->fonts.size();++i) {
-        Font *font=this->fonts[i];
+    for (int i=0;i < this->fonts->size();++i) {
+        Font *font=this->fonts->at(i);
         vector<DisplayLine *> *layout = this->layoutTextInCircle(&words,font);
         if (layout!=NULL) {
             for (int j=0;j<layout->size();++j) {
