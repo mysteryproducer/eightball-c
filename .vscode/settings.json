@@ -10,8 +10,7 @@
   "idf.customExtraVars": {
     "OPENOCD_SCRIPTS": "/Users/mysteryproducer/Documents/dev/tools/esp/esp-idf/tools/tools/openocd-esp32/v0.12.0-esp32-20240821/openocd-esp32/share/openocd/scripts",
     "ESP_ROM_ELF_DIR": "/Users/mysteryproducer/Documents/dev/tools/esp/esp-idf/tools/tools/esp-rom-elfs/20240305/",
-    "IDF_TARGET": "esp32c3",
-    "OPENOCD_USB_ADAPTER_LOCATION": "20-1"
+    "IDF_TARGET": "esp32c3"
   },
   "clangd.path": "/Users/mysteryproducer/Documents/dev/tools/esp/esp-idf/tools/tools/esp-clang/esp-19.1.2_20250312/esp-clang/bin/clangd",
   "clangd.arguments": [

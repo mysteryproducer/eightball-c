@@ -16,9 +16,9 @@ void * initScreen(lcd_config config) {
         return NULL;
     }
     vector<string> fontFiles = {
-        "/files/monaco14.bin",
-        "/files/monaco20.bin",
-        "/files/monaco28.bin"
+        "/files/monaco14.bmf",
+        "/files/monaco20.bmf",
+        "/files/monaco28.bmf"
     };
     vector<Font *> *fonts = Font::loadFonts(&fontFiles);
     screen->loadFonts(fonts);
@@ -41,4 +41,5 @@ void newText(void *genHandle, void *screenHandle) {
     string text = gen->generateNext();
     screen->redrawScreen(false);
     screen->drawText(text);
+    screen->flush();
 }

@@ -133,14 +133,19 @@ esp_err_t EightBallScreen::redrawScreen(bool write) {
         }
     }
     if (write) {
-        esp_err_t res = esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, this->width, this->height, buf);
-        if (res != ESP_OK) {
-            ESP_LOGW(TAG, "Draw fail: %d", res);
-        } else {
-            ESP_LOGI(TAG, "Draw ok");
-        }
+        return this->flush();
     }
     return ESP_OK;
+}
+
+esp_err_t EightBallScreen::flush() {
+    esp_err_t res = esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, this->screenBuffer);
+    if (res != ESP_OK) {
+        ESP_LOGW(TAG, "Draw fail: %d", res);
+    } else {
+        ESP_LOGI(TAG, "Draw ok");
+    }
+    return res;
 }
 
 esp_err_t EightBallScreen::loadFonts(vector<Font *> *fonts) {

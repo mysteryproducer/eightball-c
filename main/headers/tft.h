@@ -83,6 +83,7 @@ class EightBallScreen {
         esp_err_t setScreenPower(bool screenOn);
         esp_err_t redrawScreen(bool write=true);
         esp_err_t drawText(string text);
+        esp_err_t flush();
         esp_err_t loadFonts(vector<Font *> *fonts);
         size_t getWidth();
         size_t getHeight();
