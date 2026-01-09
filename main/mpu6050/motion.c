@@ -133,10 +133,10 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
         uint8_t status;
         i2c_read_byte(MPU6050_REG_INT_STATUS, &status); 
         if (status & MPU6050_MOTION_INT_BIT) {
-            ESP_LOGI(TAG, "Woke from motion interrupt!");
+            ESP_LOGI(TAG, "Motion interrupt");
             shakeCB();
         } else if (status & MPU6050_ZERMOT_INT_BIT) {
-            ESP_LOGI(TAG, "Woke from zero-motion interrupt!");
+            ESP_LOGI(TAG, "Zero-motion interrupt");
             idleCB();
         } else {
             ESP_LOGI(TAG, "Woke from unknown reason, INT_STATUS=0x%02X", status);

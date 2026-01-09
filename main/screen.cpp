@@ -39,7 +39,8 @@ void newText(void *genHandle, void *screenHandle) {
     GrammarGenerator *gen = (GrammarGenerator *)genHandle;
     EightBallScreen *screen = (EightBallScreen *)screenHandle;
     string text = gen->generateNext();
-    screen->redrawScreen(false);
+    screen->beginPainting();
+    screen->paintBackground();
     screen->drawText(text);
     screen->flush();
 }

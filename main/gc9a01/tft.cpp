@@ -46,7 +46,31 @@ esp_err_t EightBallScreen::setupPowerPin() {
 
 esp_err_t EightBallScreen::setScreenPower(bool power_on) {
     esp_err_t result = gpio_set_level((gpio_num_t)this->powerPin,power_on?1:0);
-    gpio_hold_en(this->powerPin);
+    result = gpio_hold_dis(this->powerPin);
+    if (result != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to unhold TFT power pin GPIO %i (%i)",this->powerPin,result);   
+    }
+    result = gpio_set_level((gpio_num_t)this->powerPin,power_on?1:0);
+    result = gpio_hold_en(this->powerPin);
+    if (result != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to hold TFT power pin GPIO %i (%i)",this->powerPin,result);   
+    }
+    return result;
+}
+
+esp_err_t EightBallScreen::beginPainting() {
+    esp_err_t result=ESP_OK;
+    if (this->screenBuffer!=NULL) {
+        ESP_LOGW("TAG","Begin paint with non-null buffer. Keeping existing buffer.");
+        result = ESP_ERR_INVALID_STATE;
+    }
+    uint32_t whole_buffer = this->width * this->height * EightBallScreen::BYTES_PER_PIX;
+    uint8_t *screenBuffer = (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
+    if (screenBuffer == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate screen buffer (%u bytes)", whole_buffer);
+        return ESP_ERR_NO_MEM;
+    }
+    this->screenBuffer = screenBuffer;
     return result;
 }
 
@@ -101,28 +125,25 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     esp_lcd_panel_disp_on_off(panel_handle, true);
     if (result!=ESP_OK) { ESP_LOGW(TAG, "fail turn on screen"); }
 
+    this->screenBuffer = NULL;
     //this->byte_per_pixel = LCD_BIT_PER_PIXEL / 8;
-    uint32_t whole_buffer = config.width * config.height * EightBallScreen::BYTES_PER_PIX;
-    screenBuffer = (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
-    if (screenBuffer == NULL) {
-        ESP_LOGE(TAG, "Failed to allocate screen buffer (%u bytes)", whole_buffer);
-        return ESP_ERR_NO_MEM;
-    }
-
     if (result == ESP_OK) {
         result = setScreenPower(true);
         ESP_LOGI(TAG, "Screen initialized. Drawing background.");
-        redrawScreen(true);
+        redrawScreen();
     } else {
         ESP_LOGE(TAG, "Failed to initialize screen");
     }
     return result;
 }
 
-// #3120f5 = 0x311e
-esp_err_t EightBallScreen::redrawScreen(bool write) {
+esp_err_t EightBallScreen::paintBackground() {
+    if (this->screenBuffer == NULL) {
+        ESP_LOGW(TAG, "Attempt to paint background with no screen buffer");
+        return ESP_ERR_INVALID_STATE;
+    }
     size_t bpl = EightBallScreen::BYTES_PER_PIX * this->width;
-    uint8_t *buf = screenBuffer;
+    uint8_t *buf = this->screenBuffer;
 
     for (int j = 0; j < this->height; j++) {
         size_t row_offset = (size_t)j * bpl;
@@ -132,19 +153,28 @@ esp_err_t EightBallScreen::redrawScreen(bool write) {
             buf[index + 1] = backColour.low;
         }
     }
-    if (write) {
-        return this->flush();
-    }
     return ESP_OK;
+}
+
+// #3120f5 = 0x311e
+esp_err_t EightBallScreen::redrawScreen() {
+    if (this->screenBuffer == NULL) {
+        ESP_LOGI(TAG, "Allocating new screen buffer for redraw");
+        if (!this->beginPainting()) {
+            return ESP_ERR_NO_MEM;
+        }
+    }
+    this->paintBackground();
+    return this->flush();
 }
 
 esp_err_t EightBallScreen::flush() {
     esp_err_t res = esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, this->screenBuffer);
     if (res != ESP_OK) {
         ESP_LOGW(TAG, "Draw fail: %d", res);
-    } else {
-        ESP_LOGI(TAG, "Draw ok");
     }
+    free(this->screenBuffer);
+    this->screenBuffer = NULL;
     return res;
 }
 

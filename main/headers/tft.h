@@ -81,7 +81,9 @@ class EightBallScreen {
 
         EightBallScreen(lcd_config config,esp_err_t *result);
         esp_err_t setScreenPower(bool screenOn);
-        esp_err_t redrawScreen(bool write=true);
+        esp_err_t beginPainting();
+        esp_err_t redrawScreen();
+        esp_err_t paintBackground();
         esp_err_t drawText(string text);
         esp_err_t flush();
         esp_err_t loadFonts(vector<Font *> *fonts);
@@ -89,7 +91,7 @@ class EightBallScreen {
         size_t getHeight();
 
     private:
-        SemaphoreHandle_t semaphore = NULL;
+//        SemaphoreHandle_t semaphore = NULL;
         esp_lcd_panel_io_handle_t io_handle = NULL;
         esp_lcd_panel_handle_t panel_handle = NULL;
         gpio_num_t powerPin;
