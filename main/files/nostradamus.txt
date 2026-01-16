@@ -1,0 +1,208 @@
+#Source: https://www.globalgreyebooks.com/online-ebooks/nostradamus_prophecies_complete-text.html
+
+{when|nil}{subject}{pred}.
+How often will you be {verb.pt}, {subject}?
+{subject} and {subject} shall be {verb.pt}. 
+{adj} times {verb.t} you. No longer will you be {verb.pt}.
+#I weep for {place},{place},{place},{place},{place},{place},{place},{place}.
+All changed except the old language, {astro.f}, {astro.f}, {astro.f}, {astro.f} in plunder
+Weep {place}, weep {place} and {place}.
+Very great famine through pestiferous wave, {subject} will be {verb.pt}
+In the {adj} temples {subject.pl} will be {verb.pt}
+{subject.s}, {subject.s}, {subject.s}, {subject.s}, {subject.s} extinguished by {subject.s}. 
+The {subject.s} will then become {adj}, sham liberty will be proclaimed everywhere. 
+In {place} a monster will be born of a {animal} and a {animal}. 
+
+[nil]
+[when]At this time
+[when]when the {when.event},
+[when.event]{when.event.s|when.event.pl}
+[when.event.s]{subject.s}{pred.c.s}
+[when.event.pl]{subject.pl}{pred.c.pl}
+
+[subject]the world
+[subject]the French
+[subject]the new republic
+[subject]Rousseau
+[subject]Great Hadrie
+[subject]Turin and Vercelli
+[subject]a new king{nil|subject.attribs}
+[subject]{subject.s|subject.pl}
+[subject]the ship of the Papacy
+[subject]the eye of Ravenna
+[subject]the two of Bresse
+[subject]temples of Malta
+[subject]nearby islands
+[subject]the reds and whites
+[subject]the tripod's legs
+[subject]the Androgyne begotten
+[subject]Castor and Pollux
+[subject]the Shaven Ones
+[subject]the King of Babylon
+[subject]the great one of Rome
+[subject]the old language
+[subject]a monster in beef
+[subject]the guilty one
+[subject]{apos}
+[subject]{astro.p}
+[subject]scandals
+[apos]O city of the sun
+[apos]O vast Rome
+
+[animal]bear
+[animal]sow
+[animal]lion
+[animal]frog
+[animal]eagle
+[animal]serpent
+
+[subject.s]face
+[subject.s]blood
+[subject.s]land
+[subject.s]plague
+[subject.s]famine
+[subject.s]fire
+[subject.s]water
+[subject.s]bark
+[subject.s]{subject}
+[subject.s]litter
+[subject.pl]faces
+[subject.pl]litters
+[subject.pl]{object.pl}
+
+[pred]will rule wrongly
+[pred]will be {pred.s}
+[pred]will be {verb.pt}
+[pred]will {verb.i}
+[pred]{pred.s|pred.pl}
+[pred.c.s]is {pred.s}
+[pred.c.pl]are {pred.pl}
+[pred.s]{verb.pt} by {object}
+[pred.pl]{verb.pt} by {object}
+[object]{object.s|object.pl}
+[object.pl]cloaks
+[object.s]whirlwind
+[object.pl]its people
+[object.s]the world
+[object.s]your veins
+[object.pl]scandals
+
+[verb.i]have {verb.pt} 
+[verb.i]weep
+[verb.pt]overturned
+[verb.pt]covered
+[verb.pt]troubled
+[verb.pt]lost
+[verb.pt]governed
+[verb.pt]forsaken
+[verb.pt]trampled underfoot
+[verb.pt]captured
+[verb.pt]deserted
+[verb.pt]intercepted
+[verb.pt]discovered
+[verb.pt]hidden
+[verb.pt]vexed
+[verb.pt]perpetrated
+[verb.pt]surprised by death
+[verb.pt]seduced to fratricide
+[verb.t]approach
+[verb.t]weep for
+
+[event]be {pred} by {object}
+[subject.attribs]who will have{subj.attr.top}
+[subj.attr.top]{subj.attr}{subj.attr.and|nil|nil}
+[subj.attr.and]and {subj.attr}
+[subj.attr]a {adj} life
+[subj.attr]little joy
+
+[adj]bad
+[adj]short
+[adj]barbaric
+[adj]vain
+[adj]strange
+[adj]sacred
+[adj]schismatic
+[adj]severe
+[adj]adverse
+[adj]libidinous
+[adj]seditious
+
+[astro.f]{astro.p|astro.c}
+[astro.p]Mars
+[astro.p]Venus
+[astro.p]Mercury
+[astro.p]Saturn
+[astro.p]Jupiter
+[astro.c]Leon
+[astro.c]Aquarius
+[astro.c]Capricorn
+[astro.c]Taurus
+[astro.c]Cancer
+[astro.c]Virgo
+[astro]{astro.p} in {astro.c}
+[astro]{astro.p} and {astro.p} in {astro.c}
+
+[place]the diphthong place
+[place]Blois
+[place]Spain
+[place]Europe
+[place]the town of Burgos
+[place]near the bridge of Laigne
+[place]Luxembourg
+[place]Lorraine
+[place]Maine
+[place]Malines
+[place]Brussels
+[place]Tunis
+[place]Marseilles
+[place]Nice
+[place]Monaco
+[place]Pisa
+[place]Genoa
+[place]Savona
+[place]Siena
+[place]Capua
+[place]Modena
+[place]Malta
+[place]Betta
+[place]Vienna
+[place]Emorte
+[place]Sopron
+[place]Cydonia
+[place]Ragusa
+[place]the city of St. Jerome
+[place]Hungary
+[place]Araby
+[place]Milan
+[place]Lucca
+[place]Florence
+[place]London
+[place]America
+[place]Scotland
+[place]Turin
+[place]Vercelli
+[place]Ghent
+[place]Norway
+[place]Dacia
+[place]the British Isle
+[place]Fez
+[place]Romania
+[place]Portugal
+[place]Toronto
+[place]York
+[place]Waterloo
+
+[people]those of Main
+[people]{people.the}
+[people.the]Low Germans
+[people.the]Picards
+[people.the]Normans
+[people.the]Germans
+[people.the]Bressans
+[people.the]Latins
+[people.the]French
+[people]those of Hesse and Thuringia
+
+[doom]in plunder
+[doom]in very strange torments
+[doom]{verb.pt}

@@ -1,0 +1,163 @@
+[nil]
+[Specifier]Catatonia
+[Specifier]Panic Attack
+[aod.sub]Alcohol
+[aod.sub]Caffeine
+[aod.sub]Cannabis
+[aod.sub]Phencyclidine
+[aod.sub]Inhalant
+[aod.sub]Opioid
+[aod.sub]Sedative, Hypnotic, or Anxiolytic
+[aod.sub]Stimulant
+[aod.sub]Tobacco
+[nd.sev]Mild
+[nd.sev]Major
+[nd.due]Due to Alzheimer’s Disease
+[nd.due]With Lewy Bodies
+[nd.due]Due to Traumatic Brain Injury
+[nd.due]Due to HIV Infection
+[nd.due]Due to Prion Disease
+[nd.due]Due to Parkinson’s Disease
+[nd.due]Due to Huntington’s Disease
+[nd.due]Due to Another Medical Condition
+[nd.due]Due to Multiple Etiologies
+[nd.loc]Frontotemporal
+[nd.loc]Vascular
+[nd.ind]Substance/Medication-Induced
+Intellectual Developmental Disorder
+Global Developmental Delay
+Language Disorder
+Speech Sound Disorder
+Childhood-Onset Fluency Disorder (Stuttering)
+Social (Pragmatic) Communication Disorder
+Autism Spectrum Disorder
+Attention-Deficit/Hyperactivity Disorder
+Specific Learning Disorder
+Developmental Coordination Disorder
+Stereotypic Movement Disorder
+Tourette’s Disorder
+Persistent (Chronic) Motor or Vocal Tic Disorder
+Provisional Tic Disorder
+Schizotypal (Personality) Disorder
+Delusional Disorder
+Brief Psychotic Disorder
+Schizophreniform Disorder
+Schizophrenia
+Schizoaffective Disorder
+Substance/Medication-Induced Psychotic Disorder
+Psychotic Disorder Due to Another Medical Condition
+Catatonic Disorder Due to Another Medical Condition
+Unspecified Catatonia
+Bipolar I Disorder
+Bipolar II Disorder
+Cyclothymic Disorder
+Substance/Medication-Induced Bipolar and Related Disorder
+Bipolar and Related Disorder Due to Another Medical Condition
+Disruptive Mood Dysregulation Disorder
+Major Depressive Disorder
+Persistent Depressive Disorder (Dysthymia)
+Premenstrual Dysphoric Disorder
+Substance/Medication-Induced Depressive Disorder
+Depressive Disorder Due to Another Medical Condition
+Separation Anxiety Disorder
+Selective Mutism
+Specific Phobia
+Social Anxiety Disorder (Social Phobia)
+Panic Disorder
+Agoraphobia
+Generalized Anxiety Disorder
+Substance/Medication-Induced Anxiety Disorder
+Anxiety Disorder Due to Another Medical Condition
+Other Specified Anxiety Disorder
+Unspecified Anxiety Disorder
+Obsessive-Compulsive Disorder
+Body Dysmorphic Disorder
+Hoarding Disorder
+Trichotillomania (Hair-Pulling Disorder)
+Excoriation (Skin-Picking) Disorder
+Substance/Medication-Induced Obsessive-Compulsive and Related Disorder
+Obsessive-Compulsive and Related Disorder Due to Another Medical Condition
+Reactive Attachment Disorder
+Disinhibited Social Engagement Disorder
+Posttraumatic Stress Disorder
+Acute Stress Disorder
+Dissociative Identity Disorder
+Dissociative Amnesia
+Depersonalization/Derealization Disorder
+Somatic Symptom Disorder
+Illness Anxiety Disorder
+Conversion Disorder (Functional Neurological Symptom Disorder)
+Factitious Disorder
+Pica
+Rumination Disorder
+Avoidant/Restrictive Food Intake Disorder
+Anorexia Nervosa
+Bulimia Nervosa
+Binge-Eating Disorder
+Enuresis
+Encopresis
+Insomnia Disorder
+Hypersomnolence Disorder
+Narcolepsy
+Breathing-Related Sleep Disorders
+Obstructive Sleep Apnea Hypopnea
+Central Sleep Apnea
+Sleep-Related Hypoventilation
+Circadian Rhythm Sleep-Wake Disorders
+Sleepwalking
+Sleep Terrors
+Nightmare Disorder
+Rapid Eye Movement Sleep Behavior Disorder
+Restless Legs Syndrome
+Substance/Medication-Induced Sleep Disorder
+Delayed Ejaculation
+Erectile Disorder
+Female Orgasmic Disorder
+Female Sexual Interest/Arousal Disorder
+Genito-Pelvic Pain/Penetration Disorder
+Male Hypoactive Sexual Desire Disorder
+Premature (Early) Ejaculation
+Substance/Medication-Induced Sexual Dysfunction
+Sexual Dysfunction
+Gender Dysphoria
+Oppositional Defiant Disorder
+Intermittent Explosive Disorder
+Conduct Disorder
+Antisocial Personality Disorder
+Pyromania
+Kleptomania
+{aod.sub}Use Disorder
+{aod.sub}Intoxication
+{aod.sub}Withdrawal
+Hallucinogen Persisting Perception Disorder
+Gambling Disorder
+Delirium
+{nd.ind|nil}{nd.sev}{nd.loc|nil}Neurocognitive Disorder{nd.due|nil}
+General Personality Disorder
+Paranoid Personality Disorder
+Schizoid Personality Disorder
+Schizotypal Personality Disorder
+Antisocial Personality Disorder
+Borderline Personality Disorder
+Histrionic Personality Disorder
+Narcissistic Personality Disorder
+Avoidant Personality Disorder
+Dependent Personality Disorder
+Obsessive-Compulsive Personality Disorder
+Personality Change Due to Another Medical Condition
+Voyeuristic Disorder
+Exhibitionistic Disorder
+Frotteuristic Disorder
+Sexual Masochism Disorder
+Sexual Sadism Disorder
+Pedophilic Disorder
+Fetishistic Disorder
+Transvestic Disorder
+Attenuated Psychosis Syndrome
+Depressive Episodes With Short-Duration Hypomania
+Persistent Complex Bereavement Disorder
+Caffeine Use Disorder
+Internet Gaming Disorder
+Neurobehavioral Disorder Associated With Prenatal Alcohol Exposure
+Suicidal Behavior Disorder
+Nonsuicidal Self-Injury
