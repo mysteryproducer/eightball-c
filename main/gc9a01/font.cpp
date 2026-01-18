@@ -76,19 +76,19 @@ bool Font::loadFont(const char *path) {
     return result;
 }
 
-void Font::writeText(uint8_t *buffer, EightBallScreen *screen, const vector<DisplayLine> &layout) {
-    size_t width=screen->getWidth();
-    size_t height=screen->getHeight();
+void Font::writeText(uint8_t *buffer, size_t width, size_t height, const vector<DisplayLine> &layout, uint16_t foreColour, uint16_t backColour) {
     for(DisplayLine line : layout) {
         this->writeTo(buffer,width,height,
             line.line.c_str(),line.xPos,line.yPos,
-            &(EightBallScreen::foreColour),&(EightBallScreen::backColour));
+            foreColour,backColour);
     }
 }
 
-void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *text, int x, int y, const Colour565 *foreColour, const Colour565 *backColour) {
+void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *text, int x, int y, uint16_t foreColour, uint16_t backColour) {
     //flipping the x-axis; start at the end and work backward.
     x+=this->width * strlen(text);
+    //todo: is it worth optimising here? Could cache letter bitmaps and/or use memcpy to move from letter buffer to screen buffer.
+//    map<char,uint8_t *> letterCache;
     for (int i=0;i<strlen(text);++i) {
         char letter = text[i];
         if (letter != ' ') {
@@ -117,14 +117,14 @@ void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *tex
     }
 }
 
-bool Font::createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour, uint8_t *buffer) {
+bool Font::createLetter(char character, uint16_t foreColour, uint16_t backColour, uint8_t *buffer) {
     size_t pixels = this->width*this->height;
     size_t bufsize = pixels*2;
     auto search = this->bitmaps.find(character);
     if (search == this->bitmaps.end()) {
         for (size_t i=0;i<bufsize;i+=2) {
-            buffer[i] = backColour->high;
-            buffer[i+1] = backColour->low;
+            buffer[i] = backColour >> 8;
+            buffer[i+1] = backColour & 0xFF;
         }
     } else {
         uint8_t byteCount = pixels / 8;
@@ -139,11 +139,11 @@ bool Font::createLetter(char character, const Colour565 *foreColour, const Colou
                 bool pixel_value = (byte & bit_mask) != 0;
                 bit_mask >>= 1;
                 if (pixel_value) {
-                    buffer[buffer_index] = foreColour->high;
-                    buffer[buffer_index + 1] = foreColour->low;
+                    buffer[buffer_index] = foreColour >> 8;
+                    buffer[buffer_index + 1] = foreColour & 0xFF;
                 } else {
-                    buffer[buffer_index] = backColour->high;
-                    buffer[buffer_index + 1] = backColour->low;
+                    buffer[buffer_index] = backColour >> 8;
+                    buffer[buffer_index + 1] = backColour & 0xFF;
                 }
             }
         }

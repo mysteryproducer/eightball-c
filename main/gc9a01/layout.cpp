@@ -63,7 +63,7 @@ esp_err_t EightBallScreen::drawText(string text) {
         bool ok = layoutTextInCircle(&words,font,&layout);
         if (ok) {
             for (int j=0;j<layout.size();++j) {
-                font->writeText(this->screenBuffer,this,layout);
+                font->writeText(this->screenBuffer,this->width,this->height,layout,EightBallScreen::fg,EightBallScreen::bg);
             }
             return ESP_OK;
         }

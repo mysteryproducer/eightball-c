@@ -60,12 +60,10 @@ class Font {
         uint8_t getWidth();
         uint8_t getHeight();
         //uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
-        void writeText(uint8_t *buffer, EightBallScreen *screen, const vector<DisplayLine> &layout);
+        void writeText(uint8_t *buffer, size_t width, size_t height, const vector<DisplayLine> &layout, uint16_t foreColour, uint16_t backColour);
         void writeTo(uint8_t *buffer, size_t width, size_t height, 
             const char *text, int x, int y, 
-            const Colour565 *foreColour, const Colour565 *backColour);
-//        void drawLetter(char character, uint8_t *buffer, const Colour565 *foreColour, const Colour565 *backColour);
-//        void drawLetter(char character, uint8_t *buffer, size_t bufferWidth, size_t bufferHeight, size_t x, size_t y, const Colour565 *foreColour, const Colour565 *backColour);
+            uint16_t foreColour, uint16_t backColour);
 
         inline bool operator<(const Font* other) {
             return this->width <other->width;
@@ -81,8 +79,7 @@ class Font {
         int bytesPerChar;
     private:
         bool loadFont(const char *path);
-        //uint8_t *createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour);
-        bool createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour, uint8_t *buffer);
+        bool createLetter(char character, uint16_t foreColour, uint16_t backColour, uint8_t *buffer);
         std::map<char, uint8_t*> charBins;
 };
 
@@ -92,7 +89,9 @@ class EightBallScreen {
     public:
         const int BYTES_PER_PIX=2;
         constexpr static const Colour565 foreColour = {.high=0xff,.low=0xff};
+        constexpr static const uint16_t fg = 0xFFFF;
         constexpr static const Colour565 backColour = {.high=0x31,.low=0x1e};
+        constexpr static const uint16_t bg = 0x311e;
 
         EightBallScreen(lcd_config config,esp_err_t *result);
         esp_err_t setScreenPower(bool screenOn);
