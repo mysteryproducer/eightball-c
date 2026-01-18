@@ -110,14 +110,14 @@ class EightBallScreen {
     private:
         esp_lcd_panel_io_handle_t io_handle = NULL;
         esp_lcd_panel_handle_t panel_handle = NULL;
-        gpio_num_t powerPin;
+        gpio_num_t powerPin = GPIO_NUM_NC;
         esp_err_t setupScreen(lcd_config config);
         esp_err_t setupPowerPin();
 
         vector<Font *> *fonts;
         size_t width;
         size_t height;
-        uint8_t *screenBuffer;
+        uint8_t *screenBuffer = NULL;
         Rectangle lastDrawBounds;
         ScreenState screenPowerState;
 

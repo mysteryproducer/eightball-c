@@ -19,9 +19,7 @@ static const char *TAG = "8 ball TFT";
 using namespace EightBall;
 
 bool screenTransferCompleteCallback(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
-    //SemaphoreHandle_t semaphore = (SemaphoreHandle_t)user_ctx;
     EightBallScreen *screen = (EightBallScreen *)user_ctx;
-    //xSemaphoreGiveFromISR(semaphore);
     int result = xSemaphoreGive(screen->semaphore);
     return result == pdTRUE;
 }
@@ -93,10 +91,10 @@ esp_err_t EightBallScreen::setScreenPower(bool power_on) {
 esp_err_t EightBallScreen::beginPainting() {
     esp_err_t result=ESP_OK;
     // Buffer is static now; attached to screen instance. This check no longer makes sense.
-    // if (this->screenBuffer!=NULL) {
-    //     ESP_LOGW("TAG","Begin paint with non-null buffer. Keeping existing buffer.");
-    //     result = ESP_ERR_INVALID_STATE;
-    // }
+    if (this->screenBuffer!=NULL) {
+        ESP_LOGW("TAG","Begin paint with non-null buffer. Keeping existing buffer.");
+        return ESP_ERR_INVALID_STATE;
+    }
     uint32_t whole_buffer = this->width * this->height * EightBallScreen::BYTES_PER_PIX;
     uint8_t *screenBuffer = (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
     if (screenBuffer == NULL) {
@@ -158,7 +156,7 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     result = esp_lcd_panel_disp_on_off(panel_handle, true);
     if (result!=ESP_OK) { ESP_LOGW(TAG, "fail turn on screen"); }
 
-    this->screenBuffer = NULL;
+    //this->screenBuffer = NULL;
     //this->byte_per_pixel = LCD_BIT_PER_PIXEL / 8;
     if (result == ESP_OK) {
         result = setScreenPower(true);
@@ -209,8 +207,8 @@ esp_err_t EightBallScreen::flush() {
     if (res != ESP_OK) {
         ESP_LOGW(TAG, "Draw fail: %d", res);
     }
-    free(this->screenBuffer);
-    this->screenBuffer = NULL;
+//    free(this->screenBuffer);
+//    this->screenBuffer = NULL;
     return res;
 }
 

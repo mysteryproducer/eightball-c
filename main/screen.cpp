@@ -31,8 +31,8 @@ void screenPower(void *screenHandle, bool screenOn) {
 }
 
 void * initGenerator() {
-    TextGenerator *gen = new TestGenerator();
-    //GrammarGenerator *gen = new GrammarGenerator("/files/dsm5.txt");
+    //TextGenerator *gen = new TestGenerator();
+    GrammarGenerator *gen = new GrammarGenerator("/files/dsm5.txt");
     return (void *)gen;
 }
 

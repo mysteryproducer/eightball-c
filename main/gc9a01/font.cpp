@@ -88,17 +88,13 @@ void Font::writeText(uint8_t *buffer, EightBallScreen *screen, const vector<Disp
 
 void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *text, int x, int y, const Colour565 *foreColour, const Colour565 *backColour) {
     //flipping the x-axis; start at the end and work backward.
-    ESP_LOGI(TAG,"Writing text '%s' at %i,%i",text,x,y);
     x+=this->width * strlen(text);
     for (int i=0;i<strlen(text);++i) {
-        ESP_LOGI(TAG,"Drawing character %c at %i,%i",text[i],x - (i+1)*this->width,y);
         char letter = text[i];
         if (letter != ' ') {
-//            uint8_t binz[width * height * 2];
-            uint8_t *charBinary = (uint8_t *)malloc(width * height * 2);
-
+            size_t charBufSize=this->width * this->height * 2;
+            uint8_t charBinary[charBufSize];
             createLetter(letter, foreColour, backColour, charBinary);
-            ESP_LOGI(TAG,"Drawing character %c bitmap",text[i]);
             for (size_t row=0;row<this->height;++row) {
                 for (size_t col=0;col<this->width;++col) {
                     size_t screen_x = x - (i+1)*this->width + col;
@@ -117,7 +113,6 @@ void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *tex
                     buffer[screen_index + 1] = charBinary[char_index + 1];
                 }
             }
-            free(charBinary);
         }
     }
 }
@@ -125,10 +120,6 @@ void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *tex
 bool Font::createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour, uint8_t *buffer) {
     size_t pixels = this->width*this->height;
     size_t bufsize = pixels*2;
-    // if (buffer == NULL) {
-    //     ESP_LOGE(TAG, "Failed to allocate memory for character bitmap");
-    //     return false;
-    // }
     auto search = this->bitmaps.find(character);
     if (search == this->bitmaps.end()) {
         for (size_t i=0;i<bufsize;i+=2) {
