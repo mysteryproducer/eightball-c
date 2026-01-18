@@ -92,10 +92,11 @@ esp_err_t EightBallScreen::setScreenPower(bool power_on) {
 
 esp_err_t EightBallScreen::beginPainting() {
     esp_err_t result=ESP_OK;
-    if (this->screenBuffer!=NULL) {
-        ESP_LOGW("TAG","Begin paint with non-null buffer. Keeping existing buffer.");
-        result = ESP_ERR_INVALID_STATE;
-    }
+    // Buffer is static now; attached to screen instance. This check no longer makes sense.
+    // if (this->screenBuffer!=NULL) {
+    //     ESP_LOGW("TAG","Begin paint with non-null buffer. Keeping existing buffer.");
+    //     result = ESP_ERR_INVALID_STATE;
+    // }
     uint32_t whole_buffer = this->width * this->height * EightBallScreen::BYTES_PER_PIX;
     uint8_t *screenBuffer = (uint8_t *)heap_caps_calloc(1, whole_buffer, MALLOC_CAP_DMA);
     if (screenBuffer == NULL) {

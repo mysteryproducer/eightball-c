@@ -28,9 +28,9 @@ void splitString(string text,vector<string> *words) {
         size_t h_ix=word.find('-');
         if (h_ix != string::npos) {
             string first = word.substr(0,h_ix); 
-            words->insert(next(words->begin(),i),first);
             string second = word.substr(h_ix+1);
-            words->at(i+1) = second;
+            words->at(i) = second;
+            words->insert(words->begin()+i,first);
         }
     }
 }
@@ -56,16 +56,15 @@ void calculateBounds(vector<DisplayLine*> *lines, Font *font, Rectangle *result)
 
 esp_err_t EightBallScreen::drawText(string text) {
     vector<string> words;
-//split the string
     splitString(text,&words);
     for (int i=0;i < fonts->size();++i) {
         Font *font = fonts->at(i);
-        vector<DisplayLine *> *layout = layoutTextInCircle(&words,font);
-        if (layout!=NULL) {
-            for (int j=0;j<layout->size();++j) {
+        vector<DisplayLine> layout;
+        bool ok = layoutTextInCircle(&words,font,&layout);
+        if (ok) {
+            for (int j=0;j<layout.size();++j) {
                 font->writeText(this->screenBuffer,this,layout);
             }
-            deleteLines(layout);
             return ESP_OK;
         }
     }
@@ -101,14 +100,12 @@ FontMetrics *EightBallScreen::getLinePositions(size_t font_height) {
 }
 
 // this function first drafted by GPT. Refactored and ported from python.
-vector<DisplayLine *> *EightBallScreen::layoutTextInCircle(vector<string> *words,Font *font) {
+bool EightBallScreen::layoutTextInCircle(vector<string> *words, Font *font, vector<DisplayLine> *result) {
     size_t font_width = font->getWidth();
     size_t font_height = font->getHeight();
-    vector<DisplayLine *> *lines = new vector<DisplayLine *>();
     FontMetrics *metrics = this->getLinePositions(font_height);
     float radius = metrics->radius;
 
-    string current_line = "";
     size_t word_index = 0;
     vector<size_t> *y_positions = metrics->positions;
     for (size_t y : *y_positions) {
@@ -134,7 +131,7 @@ vector<DisplayLine *> *EightBallScreen::layoutTextInCircle(vector<string> *words
         if (!line.empty()) {
             size_t line_pixel_width = line.length() * font_width;
             size_t x = (metrics->screen_diameter - line_pixel_width) / 2;
-            lines->push_back(new DisplayLine {
+            result->push_back({
                 .xPos = int(x)+5,
                 .yPos = int(y)+5,
                 .line = line 
@@ -145,24 +142,24 @@ vector<DisplayLine *> *EightBallScreen::layoutTextInCircle(vector<string> *words
         }
     }
     if (word_index < words->size()) {
-        deleteLines(lines);
-        return NULL;
+        result->clear();
+        return false;
     }
     //eliminate gaps
-    for (size_t i=1;i<lines->size();++i) {
-        if (lines->at(i)->yPos - lines->at(i-1)->yPos > font_height) {
+    for (size_t i=1;i<result->size();++i) {
+        if (result->at(i).yPos - result->at(i-1).yPos > font_height) {
             for (int j=0;j<i;++j) {
-                lines->at(j)->yPos += font_height;
+                result->at(j).yPos += font_height;
             }
         }
     }
     //vertically centre
-    int v_shift=int(metrics->radius - (lines->back()->yPos + font_height - lines->front()->yPos)/2);
-    v_shift-=lines->front()->yPos;
+    int v_shift=int(metrics->radius - (result->back().yPos + font_height - result->front().yPos)/2);
+    v_shift-=result->front().yPos;
     if (v_shift > 0) {
-        for (DisplayLine *line : *lines) {
-            line->yPos+=v_shift;
+        for (DisplayLine &line : *result) {
+            line.yPos+=v_shift;
         }
     }
-    return lines;
+    return true;
 }

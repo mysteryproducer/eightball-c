@@ -12,11 +12,14 @@ using namespace std;
 
 namespace EightBall {
 
-typedef struct {
-    int xPos;
-    int yPos;
-    string line;
-} DisplayLine;
+class DisplayLine {
+    public:
+        int xPos;
+        int yPos;
+        string line;
+    private:
+//        ~DisplayLine() {delete line;};
+};
 
 typedef struct {
     float screen_diameter;// =self.tft.height - 10
@@ -57,9 +60,9 @@ class Font {
         uint8_t getWidth();
         uint8_t getHeight();
         //uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
-        void writeText(uint8_t *buffer, EightBallScreen *screen, vector<DisplayLine *> *layout);
+        void writeText(uint8_t *buffer, EightBallScreen *screen, const vector<DisplayLine> &layout);
         void writeTo(uint8_t *buffer, size_t width, size_t height, 
-            string text, int x, int y, 
+            const char *text, int x, int y, 
             const Colour565 *foreColour, const Colour565 *backColour);
 //        void drawLetter(char character, uint8_t *buffer, const Colour565 *foreColour, const Colour565 *backColour);
 //        void drawLetter(char character, uint8_t *buffer, size_t bufferWidth, size_t bufferHeight, size_t x, size_t y, const Colour565 *foreColour, const Colour565 *backColour);
@@ -74,11 +77,12 @@ class Font {
         Font();
         uint8_t width;
         uint8_t height;
-        std::map<uint8_t,uint8_t*> bitmaps;
+        map<uint8_t,uint8_t*> bitmaps;
         int bytesPerChar;
     private:
         bool loadFont(const char *path);
-        uint8_t *createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour);
+        //uint8_t *createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour);
+        bool createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour, uint8_t *buffer);
         std::map<char, uint8_t*> charBins;
 };
 
@@ -120,7 +124,7 @@ class EightBallScreen {
         map<int,FontMetrics *> metrics;
         vector<DisplayLine*> *layoutText(string displayText);
         FontMetrics *getLinePositions(size_t font_height);
-        vector<DisplayLine *> *layoutTextInCircle(vector<string> *words,Font *font);
+        bool layoutTextInCircle(vector<string> *words,Font *font,vector<DisplayLine> *result);
 };
 
 };

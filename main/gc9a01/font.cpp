@@ -76,31 +76,29 @@ bool Font::loadFont(const char *path) {
     return result;
 }
 
-void Font::writeText(uint8_t *buffer, EightBallScreen *screen, vector<DisplayLine *> *layout) {
+void Font::writeText(uint8_t *buffer, EightBallScreen *screen, const vector<DisplayLine> &layout) {
     size_t width=screen->getWidth();
     size_t height=screen->getHeight();
-    for(DisplayLine *line : *layout) {
+    for(DisplayLine line : layout) {
         this->writeTo(buffer,width,height,
-            line->line,line->xPos,line->yPos,
+            line.line.c_str(),line.xPos,line.yPos,
             &(EightBallScreen::foreColour),&(EightBallScreen::backColour));
     }
 }
 
-void Font::writeTo(uint8_t *buffer, size_t width, size_t height, string text, int x, int y, const Colour565 *foreColour, const Colour565 *backColour) {
+void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *text, int x, int y, const Colour565 *foreColour, const Colour565 *backColour) {
     //flipping the x-axis; start at the end and work backward.
-    x+=this->width * text.length();
-    for (int i=0;i<text.length();++i) {
+    ESP_LOGI(TAG,"Writing text '%s' at %i,%i",text,x,y);
+    x+=this->width * strlen(text);
+    for (int i=0;i<strlen(text);++i) {
+        ESP_LOGI(TAG,"Drawing character %c at %i,%i",text[i],x - (i+1)*this->width,y);
         char letter = text[i];
         if (letter != ' ') {
-//            auto ptr = charBins.find(letter);
-            uint8_t *charBinary;
-//            if (ptr == charBins.end()) {
-                //ESP_LOGW(TAG, "No bitmap for character '%c' (code %i)", letter, (int)letter);
-                charBinary = createLetter(letter, foreColour, backColour);
-//                charBins[letter] = charBinary;
-//            } else {
-//                charBinary = ptr->second;
-//            }
+//            uint8_t binz[width * height * 2];
+            uint8_t *charBinary = (uint8_t *)malloc(width * height * 2);
+
+            createLetter(letter, foreColour, backColour, charBinary);
+            ESP_LOGI(TAG,"Drawing character %c bitmap",text[i]);
             for (size_t row=0;row<this->height;++row) {
                 for (size_t col=0;col<this->width;++col) {
                     size_t screen_x = x - (i+1)*this->width + col;
@@ -110,6 +108,11 @@ void Font::writeTo(uint8_t *buffer, size_t width, size_t height, string text, in
                     }
                     size_t screen_index = (screen_y * width + screen_x) * 2;
                     size_t char_index = (row * this->width + col) * 2;
+                    if (screen_index + 1 >= width * height * 2 || 
+                        char_index + 1 >= width * height * 2) {
+                        ESP_LOGE(TAG,"Index out of bounds: screen_index %i, char_index %i",screen_index,char_index);
+                        continue;
+                    }
                     buffer[screen_index] = charBinary[char_index];
                     buffer[screen_index + 1] = charBinary[char_index + 1];
                 }
@@ -119,15 +122,13 @@ void Font::writeTo(uint8_t *buffer, size_t width, size_t height, string text, in
     }
 }
 
-uint8_t *Font::createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour) {
-//    uint8_t masks[] = uint8_t[0x7F,0xBF,0xDF,0xEF,0xF7,0xFB,0xFD,0xFE];
-    size_t pixels = this->width*this->height; 
+bool Font::createLetter(char character, const Colour565 *foreColour, const Colour565 *backColour, uint8_t *buffer) {
+    size_t pixels = this->width*this->height;
     size_t bufsize = pixels*2;
-    uint8_t *buffer = (uint8_t *)malloc(bufsize);//heap_caps_calloc(bufsize,1,MALLOC_CAP_DMA);
-    if (buffer == NULL) {
-        ESP_LOGE(TAG, "Failed to allocate memory for character bitmap");
-        return NULL;
-    }
+    // if (buffer == NULL) {
+    //     ESP_LOGE(TAG, "Failed to allocate memory for character bitmap");
+    //     return false;
+    // }
     auto search = this->bitmaps.find(character);
     if (search == this->bitmaps.end()) {
         for (size_t i=0;i<bufsize;i+=2) {
@@ -156,5 +157,5 @@ uint8_t *Font::createLetter(char character, const Colour565 *foreColour, const C
             }
         }
     }
-    return buffer;
+    return true;
 }
