@@ -97,7 +97,7 @@ void Font::writeTo(uint8_t *buffer, size_t width, size_t height, const char *tex
             createLetter(letter, foreColour, backColour, charBinary);
             for (size_t row=0;row<this->height;++row) {
                 for (size_t col=0;col<this->width;++col) {
-                    size_t screen_x = x - (i+1)*this->width + col;
+                    size_t screen_x = x - i*this->width - col;
                     size_t screen_y = y + row;
                     if (screen_x >= width || screen_y >= height) {
                         continue;
@@ -135,7 +135,7 @@ bool Font::createLetter(char character, uint16_t foreColour, uint16_t backColour
                 size_t pixel_index = i*8 + bit;
                 size_t row = pixel_index / this->width;
                 size_t col = pixel_index % this->width;
-                size_t buffer_index = ((row+1) * this->width - col) * 2;
+                size_t buffer_index = (row * this->width + col) * 2;
                 bool pixel_value = (byte & bit_mask) != 0;
                 bit_mask >>= 1;
                 if (pixel_value) {

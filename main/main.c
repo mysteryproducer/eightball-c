@@ -11,7 +11,7 @@
 
 mpu_config mpuConfig = {
     .power = GPIO_NUM_5,
-    .interrupt = GPIO_NUM_20,
+    .interrupt = GPIO_NUM_21,
     .scl = GPIO_NUM_7,
     .sda = GPIO_NUM_8
 };
