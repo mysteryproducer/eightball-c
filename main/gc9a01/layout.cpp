@@ -14,7 +14,18 @@ void deleteLines(vector <DisplayLine *> *layout) {
     delete layout;
 }
 
-void splitString(string text,vector<string> *words) {
+void splitChar(char separator, vector<string> *words, size_t wordIndex) {
+    string word=words->at(wordIndex);
+    size_t h_ix=word.find(separator);
+    if (h_ix != string::npos) {
+        string first = word.substr(0,h_ix+1); 
+        string second = word.substr(h_ix+1);
+        words->at(wordIndex) = second;
+        words->insert(words->begin()+wordIndex,first);
+    }
+}
+void splitString(const string &textToSplit,vector<string> *words) {
+    string text = textToSplit;
     size_t pos = text.find(' ');
     while (pos != string::npos) {
         string token = text.substr(0, pos);
@@ -24,14 +35,8 @@ void splitString(string text,vector<string> *words) {
     }
     words->push_back(text);
     for (size_t i=0;i < words->size();++i) {
-        string word=words->at(i);
-        size_t h_ix=word.find('-');
-        if (h_ix != string::npos) {
-            string first = word.substr(0,h_ix); 
-            string second = word.substr(h_ix+1);
-            words->at(i) = second;
-            words->insert(words->begin()+i,first);
-        }
+        splitChar('-',words,i);
+        splitChar('/',words,i);
     }
 }
 
@@ -119,7 +124,7 @@ bool EightBallScreen::layoutTextInCircle(vector<string> *words, Font *font, vect
 
         string line = "";
         while (word_index < words->size()) {
-            bool add_space = !(line.empty() || line.ends_with('-')); 
+            bool add_space = !(line.empty() || line.ends_with('-') || line.ends_with('/')); 
             string test_line = line + (add_space?" ":"") + words->at(word_index);
             if (test_line.length() <= max_chars) {
                 line = test_line;

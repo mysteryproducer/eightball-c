@@ -7,7 +7,7 @@
 #include "esp_log.h"
 
 #define TAG "8 ball main"
-#define AWAKE_SECONDS 5
+#define AWAKE_SECONDS 3
 
 mpu_config mpuConfig = {
     .power = GPIO_NUM_5,
@@ -20,6 +20,7 @@ lcd_config config = {
     .mosi_pin = GPIO_NUM_1,
     .cs_pin = GPIO_NUM_3,
     .dc_pin = GPIO_NUM_2,
+    
     .reset_pin = GPIO_NUM_4,
     .power_pin = GPIO_NUM_10,
     .width = 240,

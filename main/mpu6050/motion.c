@@ -9,6 +9,7 @@ https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system
 
 #include "driver/i2c.h"
 #include "driver/gpio.h"
+#include "esp_sleep.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -36,7 +37,7 @@ https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system
 #define MPU6050_MOTION_INT_BIT         0x40
 #define MPU6050_ZERMOT_INT_BIT         0x20
 
-#define TAG                            "MPU6050_wake_on_motion"
+#define TAG                            "MPU6050"
 
 
 static esp_err_t i2c_write_byte(uint8_t reg, uint8_t data) {
@@ -82,22 +83,22 @@ static void mpu6050_enter_wake_on_motion(void) {
     i2c_write_byte(MPU6050_REG_MOT_DUR, 3); // 3*1ms=3ms
     // Motion threshold: lower = more sensitive
     i2c_write_byte(MPU6050_REG_ZRMOT_THR, 4);
-    // i2c_write_byte(MPU6050_REG_ZRMOT_DUR, 0x78); // 78*64ms=5s
+    // i2c_write_byte(MPU6050_REG_ZRMOT_DUR, 0x78); // 0x78*64ms=5s
     // duration is in greater increments during cycle mode.
     i2c_write_byte(MPU6050_REG_ZRMOT_DUR, 0x05);
 
     // Configure motion detection control:
-    // Enable accelerometer hardware intelligence for motion detection
+    // Enable accelerometer hardware for motion detection
     i2c_write_byte(MPU6050_REG_MOTION_DETECT_CTRL, 0x15); // 0x15 = latch, compare filtered data
 
     // Enable motion interrupt
     i2c_write_byte(MPU6050_REG_INT_ENABLE, MPU6050_MOTION_INT_BIT | MPU6050_ZERMOT_INT_BIT);
 
     // Enable low-power accelerometer mode (cycle mode)
-    // Sleep bit=0, Cycle=1, use internal 1.25Hz sampling
+    // Sleep bit=0, Cycle=1, use internal 1.25Hz sampling0
     // bits 6-7: 0=1.25Hz, 1=2.5Hz, 2=5Hz, 3=10Hz. Go with 5Hz
     i2c_write_byte(MPU6050_REG_PWR_MGMT_2, 0x87); // disable gyro axes, keep accel only
-    // bit5=1 → cycle mode, bit 3=1 → temp disable
+    // bit5=1 → cycle mode, bit 3=1 → temperature sensor disable
     i2c_write_byte(MPU6050_REG_PWR_MGMT_1, 0x28);
 
     ESP_LOGI(TAG, "MPU6050 in low-power motion detection mode");
@@ -128,26 +129,39 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
     gpio_pulldown_dis(config.interrupt);
 
     mpu6050_enter_wake_on_motion();
+    bool deepSleep=false;
 
     while (true) {
-//        ESP_LOGI(TAG, "Entering light sleep... Move sensor to wake");
         clear_motion_interrupt();
 
 //        esp_sleep_enable_timer_wakeup(5 * 1000000); // 10 seconds
-        gpio_wakeup_enable(config.interrupt, GPIO_INTR_HIGH_LEVEL);
-        esp_sleep_enable_gpio_wakeup();
-        esp_light_sleep_start();
+        if (!deepSleep) {
+            ESP_LOGD(TAG,"Light sleep");
+            gpio_wakeup_enable(config.interrupt, GPIO_INTR_HIGH_LEVEL);
+            esp_sleep_enable_gpio_wakeup();
+            esp_light_sleep_start();
+        } else {
+            ESP_LOGD(TAG,"Deep sleep");
+            esp_err_t wakeConfigured = esp_deep_sleep_enable_gpio_wakeup(1 << config.interrupt, GPIO_INTR_HIGH_LEVEL); // Wake on HIGH
+            if (wakeConfigured == ESP_OK) {
+                esp_deep_sleep_start();
+                //reinit screen on wake?
+            } else {
+                deepSleep=false;
+            }
+        }
 
         uint8_t status;
         i2c_read_byte(MPU6050_REG_INT_STATUS, &status); 
         if (status & MPU6050_MOTION_INT_BIT) {
-            ESP_LOGI(TAG, "Motion interrupt");
+            ESP_LOGD(TAG, "Motion interrupt");
             shakeCB();
         } else if (status & MPU6050_ZERMOT_INT_BIT) {
-            ESP_LOGI(TAG, "Zero-motion interrupt");
+            ESP_LOGD(TAG, "Zero-motion interrupt");
             idleCB();
+            deepSleep = !deepSleep;
         } else {
-            ESP_LOGI(TAG, "Woke from unknown reason, INT_STATUS=0x%02X", status);
+            ESP_LOGI(TAG, "Woke for unknown reason, INT_STATUS=0x%02X", status);
             otherCB(status);
         }
     }
