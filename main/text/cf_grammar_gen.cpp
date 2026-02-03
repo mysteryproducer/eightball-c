@@ -64,6 +64,16 @@ string GrammarGenerator::getRandomElement(vector<string> *items) {
     return items->at(index);
 }
 
+const string whitespace = " \t\n\r\f\v";
+string trim(const string& str) {
+    size_t start = str.find_first_not_of(whitespace);
+    if (start == std::string::npos) {
+        return ""; // String is all whitespace
+    }
+    size_t end = str.find_last_not_of(whitespace);
+    return str.substr(start, end - start + 1);
+}
+
 void GrammarGenerator::readFile(const char* filename) {
     ESP_LOGI(TAG,"Reading file %s",filename);
     if (init_filesystem() != ESP_OK) {
@@ -83,19 +93,15 @@ void GrammarGenerator::readFile(const char* filename) {
             if (linePtr[0]=='#') {
                 continue;
             }
-            string *line=new string(linePtr);
-            if (line->empty()) {
-                delete line;
+            string line=trim(linePtr);
+            if (line.empty()) {
                 continue;
             }
-            while(line->ends_with('\r') || line->ends_with('\n')) {
-                line->pop_back();
-            }
             found++;
-            if (line->at(0)=='[') {
-                int endix=line->find("]");
-                string key=line->substr(1,endix-1);
-                line->erase(0,endix+1);
+            if (line.at(0)=='[') {
+                int endix=line.find("]");
+                string key=line.substr(1,endix-1);
+                line.erase(0,endix+1);
                 auto iterator=this->substitutions.find(key);
                 vector<string> *sublist = NULL;
                 if (iterator==this->substitutions.end()) {
@@ -104,9 +110,9 @@ void GrammarGenerator::readFile(const char* filename) {
                 } else {
                     sublist = iterator->second;
                 }
-                sublist->push_back(*line);
+                sublist->push_back(line);
             } else {
-                this->templates.push_back(*line);
+                this->templates.push_back(line);
             }
         }
         fclose(file);

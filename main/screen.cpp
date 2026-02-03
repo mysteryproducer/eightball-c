@@ -40,7 +40,7 @@ void newText(void *genHandle, void *screenHandle) {
     GrammarGenerator *gen = (GrammarGenerator *)genHandle;
     EightBallScreen *screen = (EightBallScreen *)screenHandle;
     string text = gen->generateNext();
-    ESP_LOGI("main","New text: %s",text.c_str());
+    ESP_LOGI("main","New text: '%s'",text.c_str());
     screen->beginPainting();
     screen->paintBackground();
     screen->drawText(text);

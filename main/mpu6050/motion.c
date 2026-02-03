@@ -135,21 +135,21 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
         clear_motion_interrupt();
 
 //        esp_sleep_enable_timer_wakeup(5 * 1000000); // 10 seconds
-        if (!deepSleep) {
+        // if (!deepSleep) {
             ESP_LOGD(TAG,"Light sleep");
             gpio_wakeup_enable(config.interrupt, GPIO_INTR_HIGH_LEVEL);
             esp_sleep_enable_gpio_wakeup();
             esp_light_sleep_start();
-        } else {
-            ESP_LOGD(TAG,"Deep sleep");
-            esp_err_t wakeConfigured = esp_deep_sleep_enable_gpio_wakeup(1 << config.interrupt, GPIO_INTR_HIGH_LEVEL); // Wake on HIGH
-            if (wakeConfigured == ESP_OK) {
-                esp_deep_sleep_start();
-                //reinit screen on wake?
-            } else {
-                deepSleep=false;
-            }
-        }
+        // } else {
+        //     ESP_LOGD(TAG,"Deep sleep");
+        //     esp_err_t wakeConfigured = esp_deep_sleep_enable_gpio_wakeup(1 << config.interrupt, GPIO_INTR_HIGH_LEVEL); // Wake on HIGH
+        //     if (wakeConfigured == ESP_OK) {
+        //         esp_deep_sleep_start();
+        //         //reinit screen on wake?
+        //     } else {
+        //         deepSleep=false;
+        //     }
+        // }
 
         uint8_t status;
         i2c_read_byte(MPU6050_REG_INT_STATUS, &status); 

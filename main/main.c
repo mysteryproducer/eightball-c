@@ -9,6 +9,7 @@
 #define TAG "8 ball main"
 #define AWAKE_SECONDS 3
 
+#ifdef CONFIG_IDF_TARGET_ESP32C3
 mpu_config mpuConfig = {
     .power = GPIO_NUM_5,
     .interrupt = GPIO_NUM_21,
@@ -27,6 +28,26 @@ lcd_config config = {
     .height = 240,
     .freq_hz = 40 * 1000 * 1000
 };
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+mpu_config mpuConfig = {
+    .power = GPIO_NUM_NC,
+    .interrupt = GPIO_NUM_8,
+    .scl = GPIO_NUM_13,
+    .sda = GPIO_NUM_12
+};
+lcd_config config = {
+    .clk_pin = GPIO_NUM_1,
+    .mosi_pin = GPIO_NUM_2,
+    .cs_pin = GPIO_NUM_4,
+    .dc_pin = GPIO_NUM_3,
+    
+    .reset_pin = GPIO_NUM_5,
+    .power_pin = GPIO_NUM_6,
+    .width = 240,
+    .height = 240,
+    .freq_hz = 40 * 1000 * 1000
+};
+#endif
 static void *screenHandle = NULL;
 static void *genHandle = NULL;
 static bool screenPowered = false;

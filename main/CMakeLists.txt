@@ -8,5 +8,5 @@ idf_component_register(SRCS "main.c"
                             "gc9a01/layout.cpp"
                     INCLUDE_DIRS "." 
                             "headers"
-                    REQUIRES driver freertos spiffs)
+                    REQUIRES esp_driver_gpio esp_driver_i2c freertos spiffs)
 spiffs_create_partition_image(storage ./files FLASH_IN_PROJECT)
