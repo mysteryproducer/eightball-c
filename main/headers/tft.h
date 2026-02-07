@@ -95,7 +95,6 @@ class EightBallScreen {
 
         EightBallScreen(lcd_config config,esp_err_t *result);
         esp_err_t setScreenPower(bool screenOn);
-        esp_err_t beginPainting();
         esp_err_t redrawScreen();
         esp_err_t paintBackground();
         esp_err_t drawText(string text);
@@ -112,6 +111,7 @@ class EightBallScreen {
         gpio_num_t powerPin = GPIO_NUM_NC;
         esp_err_t setupScreen(lcd_config config);
         esp_err_t setupPowerPin();
+        esp_err_t initialiseBuffer();
 
         vector<Font *> *fonts;
         size_t width;

@@ -23,7 +23,7 @@ lcd_config config = {
     .dc_pin = GPIO_NUM_2,
     
     .reset_pin = GPIO_NUM_4,
-    .power_pin = GPIO_NUM_10,
+    .power_pin = GPIO_NUM_10,  
     .width = 240,
     .height = 240,
     .freq_hz = 40 * 1000 * 1000

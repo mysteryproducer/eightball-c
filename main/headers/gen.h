@@ -27,11 +27,11 @@ class GrammarGenerator : public TextGenerator {
         ~GrammarGenerator() override {};
     private:
         void readFile(const char* filename);
-        map<string,vector<string> *> substitutions;
+        map<string,vector<string>> substitutions;
         vector<string> templates;
 
-        string getRandomElement(vector<string>* items);
-        vector<string> *getOptions(string key); 
+        string getRandomElement(const vector<string> &items);
+        string getSubstitute(const string &key); 
 };
 
 }

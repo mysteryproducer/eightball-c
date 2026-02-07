@@ -41,7 +41,7 @@ void newText(void *genHandle, void *screenHandle) {
     EightBallScreen *screen = (EightBallScreen *)screenHandle;
     string text = gen->generateNext();
     ESP_LOGI("main","New text: '%s'",text.c_str());
-    screen->beginPainting();
+//    screen->initialiseBuffer();
     screen->paintBackground();
     screen->drawText(text);
     screen->flush();

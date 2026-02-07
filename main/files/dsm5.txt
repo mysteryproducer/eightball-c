@@ -12,13 +12,13 @@
 [aod.sub]Tobacco
 [nd.sev]Mild
 [nd.sev]Major
-[nd.due]Due to Alzheimer’s Disease
+[nd.due]Due to Alzheimer's Disease
 [nd.due]With Lewy Bodies
 [nd.due]Due to Traumatic Brain Injury
 [nd.due]Due to HIV Infection
 [nd.due]Due to Prion Disease
-[nd.due]Due to Parkinson’s Disease
-[nd.due]Due to Huntington’s Disease
+[nd.due]Due to Parkinson's Disease
+[nd.due]Due to Huntington's Disease
 [nd.due]Due to Another Medical Condition
 [nd.due]Due to Multiple Etiologies
 [nd.loc]Frontotemporal

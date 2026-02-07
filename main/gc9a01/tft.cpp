@@ -88,7 +88,7 @@ esp_err_t EightBallScreen::setScreenPower(bool power_on) {
     return result;
 }
 
-esp_err_t EightBallScreen::beginPainting() {
+esp_err_t EightBallScreen::initialiseBuffer() {
     esp_err_t result=ESP_OK;
     // Buffer is static now; attached to screen instance. This check no longer makes sense.
     if (this->screenBuffer!=NULL) {
@@ -191,7 +191,7 @@ esp_err_t EightBallScreen::paintBackground() {
 esp_err_t EightBallScreen::redrawScreen() {
     if (this->screenBuffer == NULL) {
         ESP_LOGI(TAG, "Allocating new screen buffer for redraw");
-        if (!this->beginPainting()) {
+        if (!this->initialiseBuffer()) {
             return ESP_ERR_NO_MEM;
         }
     }

@@ -19,7 +19,8 @@ GrammarGenerator::GrammarGenerator(const char *file) {
 
 string GrammarGenerator::generateNext() {
     srand(time(0));
-    string outer=getRandomElement(&this->templates);
+    string outer=getRandomElement(this->templates);
+//    string outer="{nd.ind|nil}{nd.sev}{nd.loc|nil}Neurocognitive Disorder{nd.due|nil}"s;
     int subIndex=outer.find('{');
     while (subIndex != string::npos) {
         int endIndex=outer.find('}',subIndex+1);
@@ -27,41 +28,51 @@ string GrammarGenerator::generateNext() {
             break;
         }
         string key=outer.substr(subIndex+1,endIndex-subIndex-1);
+        ESP_LOGD(TAG,"sub lookup [%s]: %D - %i [%s]",outer.c_str(),subIndex,endIndex,key.c_str());
         
-        vector<string> *options=this->getOptions(key);
-        string insert="";
-        if (options!=NULL && options->size() > 0) { 
-            insert=this->getRandomElement(options);
-            if (outer[endIndex+1] != ' ') {
-                insert+=' ';
+        string insert=this->getSubstitute(key);
+        if (insert.length() > 0) {
+            if (outer.length() > endIndex+1) {
+                if (outer.at(endIndex+1) != ' ') {
+                    insert=insert+' ';
+                }
+            } else if (outer.at(subIndex-1) != ' ') {
+                insert=' ' + insert;
             }
-        }
+        } 
+//        ESP_LOGD(TAG,"inserting '%s'",insert.c_str());
         outer.replace(subIndex,endIndex-subIndex+1,insert);
+//        ESP_LOGD(TAG,"%s",outer.c_str());
+        subIndex=outer.find('{');
     }
     return outer;
 }
 
-vector<string> *GrammarGenerator::getOptions(string key) {
+string GrammarGenerator::getSubstitute(const string &key) {
+    ESP_LOGD(TAG,"lookup key: '%s'",key.c_str());
     vector<string> keys;
     int lastPos=0;
     int index=key.find("|"s);
     while(index!=key.npos) {
         string subkey=key.substr(lastPos,index-lastPos);
+//        ESP_LOGD(TAG,"adding option set '%s'",subkey.c_str());
         keys.push_back(subkey);
         lastPos=index+1;
         index=key.find("|"s,lastPos);
     }
     string lastKey=key.substr(lastPos,key.length()-lastPos);
     keys.push_back(lastKey);
-    string finalKey=this->getRandomElement(&keys);
-//    ESP_LOGI(TAG,"going with key %s",finalKey.c_str());
-    vector<string> *result = this->substitutions[finalKey];
-    return result;
+//    ESP_LOGD(TAG,"adding option set '%s'",lastKey.c_str());
+    string finalKey=this->getRandomElement(keys);
+    vector<string> result = this->substitutions[finalKey];
+//    ESP_LOGD(TAG,"selected '%s'; %i options",finalKey.c_str(),result.size());
+    return getRandomElement(result);
 }
 
-string GrammarGenerator::getRandomElement(vector<string> *items) {
-    int index=rand() % items->size();
-    return items->at(index);
+string GrammarGenerator::getRandomElement(const vector<string> &items) {
+    int index=rand() % items.size();
+//    ESP_LOGI(TAG,"Picked item %i",index);
+    return items.at(index);
 }
 
 const string whitespace = " \t\n\r\f\v";
@@ -75,7 +86,7 @@ string trim(const string& str) {
 }
 
 void GrammarGenerator::readFile(const char* filename) {
-    ESP_LOGI(TAG,"Reading file %s",filename);
+    ESP_LOGD(TAG,"Reading file %s",filename);
     if (init_filesystem() != ESP_OK) {
         ESP_LOGE(TAG,"File system setup fail!");
         return;
@@ -90,10 +101,10 @@ void GrammarGenerator::readFile(const char* filename) {
     {
         char linePtr[1024];
         while(fgets(linePtr, sizeof(linePtr), file) != NULL) {
-            if (linePtr[0]=='#') {
+            string line=trim(linePtr);
+            if (line.front()=='#') {
                 continue;
             }
-            string line=trim(linePtr);
             if (line.empty()) {
                 continue;
             }
@@ -101,16 +112,14 @@ void GrammarGenerator::readFile(const char* filename) {
             if (line.at(0)=='[') {
                 int endix=line.find("]");
                 string key=line.substr(1,endix-1);
-                line.erase(0,endix+1);
                 auto iterator=this->substitutions.find(key);
-                vector<string> *sublist = NULL;
                 if (iterator==this->substitutions.end()) {
-                    sublist=new vector<string>();
+                    vector<string> sublist;
+                    sublist.push_back(line.substr(endix+1));
                     this->substitutions[key] = sublist;
                 } else {
-                    sublist = iterator->second;
+                    iterator->second.push_back(line.substr(endix+1));
                 }
-                sublist->push_back(line);
             } else {
                 this->templates.push_back(line);
             }
@@ -118,5 +127,5 @@ void GrammarGenerator::readFile(const char* filename) {
         fclose(file);
     }
     close_filesystem();
-    ESP_LOGI(TAG,"Finished reading file %s. %i lines processed.",filename,found);
+    ESP_LOGD(TAG,"Finished reading file %s. %i lines processed.",filename,found);
 }
