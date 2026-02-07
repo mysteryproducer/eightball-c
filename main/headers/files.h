@@ -10,4 +10,4 @@ esp_err_t init_filesystem();
 
 esp_err_t close_filesystem();
 
-esp_err_t readConfigFile(mpu_config *mpu,lcd_config *lcd);
+//esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd);

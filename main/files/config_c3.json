@@ -1,0 +1,17 @@
+{
+    "mpu_power" : 5,
+    "interrupt" : 21,
+    "scl" : 7,
+    "sda" : 8,
+
+    "clk" : 0,
+    "mosi" : 1,
+    "cs" : 3,
+    "dc" : 2,
+    
+    "reset" : 4,
+    "screen_power" : 10,
+    "width" : 240,
+    "height" : 240,
+    "spifreq_hz" : 40000000
+}

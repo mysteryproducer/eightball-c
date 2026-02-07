@@ -2,6 +2,7 @@
 primary source:
 https://esp32tutorials.com/esp32-spiffs-esp-idf/
 */
+#include "capi.h"
 #include "files.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -31,14 +32,14 @@ std::string readFileToString(const std::string& path) {
     return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-esp_err_t readConfigFile(mpu_config *mpu,lcd_config *lcd) {
-    ESP_LOGI(TAG,"Reading config.json");
+esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd) {
+    ESP_LOGD(TAG,"Reading %s",filename);
     if (init_filesystem() != ESP_OK) {
         ESP_LOGE(TAG,"File system setup fail!");
         return ESP_FAIL;
     }
 
-    std::string data = readFileToString("config.json");
+    std::string data = readFileToString(filename);
     jparse_ctx_t context;
     json_parse_start(&context,data.c_str(),data.length());
 

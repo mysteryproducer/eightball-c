@@ -35,6 +35,7 @@ void newText(void *genHandle, void *screenHandle);
 void screenPower(void *screenHandle, bool powerOn);
 //MPU6050 sleep loop:
 void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint8_t),mpu_config config);
+esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd);
 
 #if __cplusplus
 }
