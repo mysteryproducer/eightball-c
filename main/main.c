@@ -11,46 +11,6 @@
 
 mpu_config mpuConfig;
 lcd_config config;
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-//readConfigFile("/files/config_c3.json", &mpuConfig, &config);
-/*mpu_config mpuConfig = {
-    .power = GPIO_NUM_5,
-    .interrupt = GPIO_NUM_21,
-    .scl = GPIO_NUM_7,
-    .sda = GPIO_NUM_8
-};
-lcd_config config = {
-    .clk_pin = GPIO_NUM_0,
-    .mosi_pin = GPIO_NUM_1,
-    .cs_pin = GPIO_NUM_3,
-    .dc_pin = GPIO_NUM_2,
-    
-    .reset_pin = GPIO_NUM_4,
-    .power_pin = GPIO_NUM_10,  
-    .width = 240,
-    .height = 240,
-    .freq_hz = 40 * 1000 * 1000
-};*/
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
-mpuConfig = {
-    .power = GPIO_NUM_NC,
-    .interrupt = GPIO_NUM_8,
-    .scl = GPIO_NUM_13,
-    .sda = GPIO_NUM_12
-};
-config = {
-    .clk_pin = GPIO_NUM_1,
-    .mosi_pin = GPIO_NUM_2,
-    .cs_pin = GPIO_NUM_4,
-    .dc_pin = GPIO_NUM_3,
-    
-    .reset_pin = GPIO_NUM_5,
-    .power_pin = GPIO_NUM_6,
-    .width = 240,
-    .height = 240,
-    .freq_hz = 40 * 1000 * 1000
-};
-#endif
 static void *screenHandle = NULL;
 static void *genHandle = NULL;
 static bool screenPowered = false;
