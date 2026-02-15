@@ -7,7 +7,7 @@ https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system
 
 #include "capi.h"
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "driver/gpio.h"
 #include "esp_sleep.h"
 
@@ -38,28 +38,37 @@ https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system
 #define MPU6050_ZERMOT_INT_BIT         0x20
 
 #define TAG                            "MPU6050"
+static i2c_master_bus_handle_t i2c_handle;
+static i2c_master_dev_handle_t mpu6050_handle;
 
-
-static esp_err_t i2c_write_byte(uint8_t reg, uint8_t data) {
+static void i2c_write_byte(uint8_t reg, uint8_t data) {
     uint8_t buf[2] = {reg, data};
-    return i2c_master_write_to_device(I2C_MASTER_NUM, MPU6050_ADDR, buf, 2, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS));
+    ESP_ERROR_CHECK(i2c_master_transmit(mpu6050_handle, buf, 2, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS)));
 }
 
-static esp_err_t i2c_read_byte(uint8_t reg, uint8_t *data) {
-    return i2c_master_write_read_device(I2C_MASTER_NUM, MPU6050_ADDR, &reg, 1, data, 1, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS));
+static void i2c_read_byte(uint8_t reg, uint8_t *data) {
+    i2c_master_transmit_receive(mpu6050_handle, &reg, 1, data, 1, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS));
 }
 
 static void i2c_master_init(mpu_config config) {
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
+    i2c_master_bus_config_t conf = {
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port = I2C_NUM_0,
         .sda_io_num = config.sda,
         .scl_io_num = config.scl,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
+        .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = true,
+        .flags.allow_pd = false
     };
-    i2c_param_config(I2C_MASTER_NUM, &conf);
-    i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
+    ESP_ERROR_CHECK(i2c_new_master_bus(&conf, &i2c_handle));
+
+    i2c_device_config_t dev_cfg = {
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .device_address = MPU6050_ADDR,
+        .scl_speed_hz = 400000
+    };
+
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_handle, &dev_cfg, &mpu6050_handle));
 }
 
 static void mpu6050_enter_wake_on_motion(void) {

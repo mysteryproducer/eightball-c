@@ -1,7 +1,7 @@
 #pragma once
 #include "capi.h"
 #include "esp_err.h"
-#include "esp_spiffs.h"
+//#include "esp_spiffs.h"
 
 //const char *FS_BASE = "/files";
 #define FS_BASE "/files"

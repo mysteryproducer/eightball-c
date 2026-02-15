@@ -40,10 +40,6 @@ uint8_t Font::getHeight() {
     return this->height;
 }
 bool Font::loadFont(const char *path) {
-    esp_err_t returnCode=init_filesystem();
-    if (returnCode != ESP_OK) {
-        ESP_LOGE(TAG,"Couldn't init filesystem. Failed to load %s. Error code %i",path,returnCode);
-    }
     ESP_LOGI(TAG,"loading font %s",path);
     bool result=false;
     ifstream infile(path,ios::in|ios::binary);
@@ -72,7 +68,6 @@ bool Font::loadFont(const char *path) {
         ESP_LOGE(TAG,"Couldn't open file: %s",path);
     }
     delete[] sz_byte;
-    close_filesystem();
     return result;
 }
 

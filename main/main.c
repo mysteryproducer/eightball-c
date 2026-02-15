@@ -36,11 +36,13 @@ void otherCallback(uint8_t status) {
 
 void app_main(void)
 {
-    #ifdef CONFIG_IDF_TARGET_ESP32C3
+/*    #ifdef CONFIG_IDF_TARGET_ESP32C3
     readConfigFile("/files/config_c3.json", &mpuConfig, &config);
     #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    readConfigFile("/files/config_s3.json", &mpuConfig, &config);
+    readConfigFile("/files/config_s3_2bw.json", &mpuConfig, &config);
     #endif
+*/
+    readConfigFile("/files/config.jso", &mpuConfig, &config);
 
     ESP_LOGI(TAG, "Starting GC9A01");
     screenHandle = initScreen(config);

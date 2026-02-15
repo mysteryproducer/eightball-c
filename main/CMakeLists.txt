@@ -8,5 +8,6 @@ idf_component_register(SRCS "main.c"
                             "gc9a01/layout.cpp"
                     INCLUDE_DIRS "." 
                             "headers"
-                    REQUIRES esp_driver_gpio esp_driver_i2c freertos spiffs json_parser)
-spiffs_create_partition_image(storage ./files FLASH_IN_PROJECT)
+                    REQUIRES esp_driver_gpio esp_driver_i2c freertos json_parser fatfs)
+#spiffs_create_partition_image(storage ./files FLASH_IN_PROJECT)
+fatfs_create_spiflash_image(storage ./files FLASH_IN_PROJECT)
