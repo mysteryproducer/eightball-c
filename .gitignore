@@ -80,3 +80,5 @@ Desktop.ini
 .cache/
 .vscode/
 .devcontainer/
+images/
+configs/
