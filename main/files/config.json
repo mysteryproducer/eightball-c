@@ -1,0 +1,20 @@
+{
+    "mpu_power" : -1,
+    "interrupt" : 6,
+    "scl" : 1,
+    "sda" : 2,
+
+    "clk" : 9,
+    "mosi" : 10,
+    "dc" : 11,
+    "cs" : 12,
+    
+    "reset" : 13,
+    "screen_power" : 4,
+    "width" : 240,
+    "height" : 240,
+    "spifreq_hz" : 40000000,
+
+    "generator_type" : "cfg",
+    "generator_args" : "dsm5.txt"
+}

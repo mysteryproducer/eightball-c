@@ -17,7 +17,7 @@ static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 esp_err_t init_filesystem() {
     esp_vfs_fat_mount_config_t mount_config = {
         .format_if_mount_failed = false,
-        .max_files = 5,
+        .max_files = 5
     };
 
     esp_err_t err = esp_vfs_fat_spiflash_mount_rw_wl(FS_BASE, "storage", &mount_config, &s_wl_handle);
@@ -39,7 +39,7 @@ std::string readFileToString(const std::string& path) {
     return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd) {
+esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd,gen_config *gen) {
     ESP_LOGD(TAG,"Reading %s",filename);
     if (init_filesystem() != ESP_OK) {
         ESP_LOGE(TAG,"File system setup fail!");
@@ -78,6 +78,9 @@ esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd) {
     lcd->height = (uint16_t)temp;
     json_obj_get_int(&context,"spifreq_hz",&temp);
     lcd->freq_hz = (uint32_t)temp;
+
+    json_obj_get_string(&context,"generator_type",gen->gen_type,12);
+    json_obj_get_string(&context,"generator_args",gen->args,64);
 
     json_parse_end(&context);
 

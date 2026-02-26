@@ -17,3 +17,4 @@ dependencies:
   espressif/mpu6050: '*'
   espressif/esp_lcd_gc9a01: '*'
   espressif/json_parser: '*'
+  espressif/esp_tinyusb: '*'

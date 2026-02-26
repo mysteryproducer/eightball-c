@@ -28,14 +28,28 @@ typedef struct {
     gpio_num_t scl;
 } mpu_config;
 
+typedef struct {
+    char gen_type[12];
+    char args[64];
+} gen_config;
+
+typedef enum {
+    SLEEP_MODE_NONE = 0,
+    SLEEP_MODE_LIGHT,
+    SLEEP_MODE_DEEP
+} sleep_mode_t;
+
 //GC9A01 init/paint functions.
 void * initScreen(lcd_config config);
-void * initGenerator();
+void * initGenerator(gen_config config);
 void newText(void *genHandle, void *screenHandle);
 void screenPower(void *screenHandle, bool powerOn);
 //MPU6050 sleep loop:
 void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint8_t),mpu_config config);
-esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd);
+void enable_sleep(sleep_mode_t mode);
+
+esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd,gen_config *gen);
+esp_err_t init_usb_msc(void (*mountCB)(void),void (*unmountCB)(void));
 
 #if __cplusplus
 }

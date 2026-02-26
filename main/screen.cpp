@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "tft.h"
+#include "files.h"
 #include "capi.h"
 #include "gen.h"
 
@@ -30,9 +31,10 @@ void screenPower(void *screenHandle, bool screenOn) {
     screen->setScreenPower(screenOn);
 }
 
-void * initGenerator() {
+void * initGenerator(gen_config config) {
     //TextGenerator *gen = new TestGenerator();
-    GrammarGenerator *gen = new GrammarGenerator("/files/dsm5.txt");
+    string filePath = string(FS_BASE) + "/"s + string(config.args);
+    GrammarGenerator *gen = new GrammarGenerator(filePath.c_str());
     return (void *)gen;
 }
 

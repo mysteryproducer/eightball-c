@@ -40,6 +40,7 @@ https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system
 #define TAG                            "MPU6050"
 static i2c_master_bus_handle_t i2c_handle;
 static i2c_master_dev_handle_t mpu6050_handle;
+static sleep_mode_t sleepMode = SLEEP_MODE_LIGHT;
 
 static void i2c_write_byte(uint8_t reg, uint8_t data) {
     uint8_t buf[2] = {reg, data};
@@ -127,6 +128,10 @@ void powerMPU6050(gpio_num_t powerPin) {
     }
 }
 
+void enable_sleep(sleep_mode_t mode) {
+    sleepMode = mode;
+}
+
 void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint8_t),mpu_config config) {
     powerMPU6050(config.power);
     vTaskDelay(pdMS_TO_TICKS(100)); // wait for power to stabilize
@@ -142,23 +147,29 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
 
     while (true) {
         clear_motion_interrupt();
-
-//        esp_sleep_enable_timer_wakeup(5 * 1000000); // 10 seconds
-        // if (!deepSleep) {
+        if (sleepMode == SLEEP_MODE_NONE) {
+            vTaskDelay(pdMS_TO_TICKS(100)); // Poll every 0.1s
+            continue;
+        }
+        if (!deepSleep || sleepMode == SLEEP_MODE_LIGHT) {
             ESP_LOGD(TAG,"Light sleep");
             gpio_wakeup_enable(config.interrupt, GPIO_INTR_HIGH_LEVEL);
             esp_sleep_enable_gpio_wakeup();
             esp_light_sleep_start();
-        // } else {
-        //     ESP_LOGD(TAG,"Deep sleep");
-        //     esp_err_t wakeConfigured = esp_deep_sleep_enable_gpio_wakeup(1 << config.interrupt, GPIO_INTR_HIGH_LEVEL); // Wake on HIGH
-        //     if (wakeConfigured == ESP_OK) {
-        //         esp_deep_sleep_start();
-        //         //reinit screen on wake?
-        //     } else {
-        //         deepSleep=false;
-        //     }
-        // }
+        } else {
+            ESP_LOGD(TAG,"Deep sleep");
+            //TODO: make sure we can wake from deep sleep with the MPU6050 interrupt. 
+            //This may require additional hardware (e.g. a transistor to pull the interrupt pin low when motion is detected, 
+            //since the ESP32 can't wake from deep sleep on a pin that goes high). 
+            //        <- this from AI suggestion, not tested yet.
+//            esp_err_t wakeConfigured = esp_deep_sleep_enable_gpio_wakeup(1 << config.interrupt, GPIO_INTR_HIGH_LEVEL); // Wake on HIGH
+            // if (wakeConfigured == ESP_OK) {
+            //     esp_deep_sleep_start();
+            //     //reinit screen on wake?
+            // } else {
+            //     deepSleep=false;
+            // }
+        }
 
         uint8_t status;
         i2c_read_byte(MPU6050_REG_INT_STATUS, &status); 
@@ -169,6 +180,8 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
             ESP_LOGD(TAG, "Zero-motion interrupt");
             idleCB();
             deepSleep = !deepSleep;
+        } else if (status == 0) {
+            continue; // No interrupt, likely a spurious wakeup or in USB mode. Ignore.
         } else {
             ESP_LOGI(TAG, "Woke for unknown reason, INT_STATUS=0x%02X", status);
             otherCB(status);

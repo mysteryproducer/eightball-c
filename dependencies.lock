@@ -23,6 +23,25 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 2.0.4
+  espressif/esp_tinyusb:
+    component_hash: 6cc731885fb4415c1dfc63e660ee5629077c3b7352e7a5eccd035586f65bca11
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    - name: espressif/tinyusb
+      registry_url: https://components.espressif.com
+      require: public
+      version: '>=0.17.0~2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32s2
+    - esp32s3
+    - esp32p4
+    - esp32h4
+    version: 2.1.0
   espressif/jsmn:
     component_hash: d80350c41bbaa827c98a25b6072df00884e72f54885996fab4a4f0aebce6b6c3
     dependencies:
@@ -56,15 +75,31 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 1.2.1
+  espressif/tinyusb:
+    component_hash: 5ea9d3b6d6b0734a0a0b3491967aa0e1bece2974132294dbda5dd2839b247bfa
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    targets:
+    - esp32s2
+    - esp32s3
+    - esp32p4
+    - esp32h4
+    version: 0.19.0~2
   idf:
     source:
       type: idf
     version: 5.5.2
 direct_dependencies:
 - espressif/esp_lcd_gc9a01
+- espressif/esp_tinyusb
 - espressif/json_parser
 - espressif/mpu6050
 - idf
-manifest_hash: d26dcb31ed2653e1bfad45a35fc714480199b6bbd9d5230fccc11a86832c9c40
+manifest_hash: d147cdeb5970e03798fdc7026400e1fb007d55e6c1173835341a54593f4ef116
 target: esp32s3
 version: 2.0.0
