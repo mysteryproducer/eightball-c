@@ -1,20 +1,23 @@
 {
-    "mpu_power" : -1,
-    "interrupt" : 6,
-    "scl" : 1,
-    "sda" : 2,
+    "mpu_power" : 5,
+    "interrupt" : 21,
+    "scl" : 7,
+    "sda" : 8,
 
-    "clk" : 9,
-    "mosi" : 10,
-    "dc" : 11,
-    "cs" : 12,
+    "clk" : 0,
+    "mosi" : 1,
+    "cs" : 3,
+    "dc" : 2,
     
-    "reset" : 13,
-    "screen_power" : 4,
+    "reset" : 4,
+    "screen_power" : 10,
     "width" : 240,
     "height" : 240,
     "spifreq_hz" : 40000000,
 
     "generator_type" : "cfg",
-    "generator_args" : "dsm5.txt"
+    "generator_args" : "dsm5.txt",
+    "fonts" : ["monaco14.font",
+        "monaco20.font",
+        "monaco28.font"]
 }

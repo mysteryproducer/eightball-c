@@ -11,6 +11,7 @@
 #include "esp_log.h"
 
 #define TAG "8 ball main"
+
 #define AWAKE_SECONDS 2
 using namespace EightBall;
 
@@ -68,7 +69,9 @@ void usb_unmounted() {
 }
 
 void start8ball(void) {
+#ifdef CONFIG_IDF_TARGET_ESP32S3
     try {
+#endif
         readConfigFile("/files/config.json", &mpuConfig, &config, &genConfig);
         ESP_LOGI(TAG, "Starting GC9A01");
         esp_err_t result;
@@ -83,16 +86,20 @@ void start8ball(void) {
             return;
         }
         newText();
+#ifdef CONFIG_IDF_TARGET_ESP32S3
     } catch (const std::exception &e) {
         ESP_LOGE(TAG, "Exception during initialization: %s", e.what());
     }
     ESP_LOGI(TAG, "Starting USB MSC; eject the device to enable motion detection");
     init_usb_msc(usb_mounted, usb_unmounted);
+#endif
     for (int i=0;msc_mounted || (i<AWAKE_SECONDS);++i) {
         ESP_LOGI(TAG, "%i", AWAKE_SECONDS-i);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+#ifdef CONFIG_IDF_TARGET_ESP32S3
     stop_usb_msc();
+#endif
     // ESP_LOGI(TAG, "Starting USB MSC; eject the device to enable motion detection");
     // init_usb_msc(&usb_mounted, &usb_unmounted);
     ESP_LOGI(TAG, "Starting MPU6050 loop");

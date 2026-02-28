@@ -100,6 +100,6 @@ direct_dependencies:
 - espressif/json_parser
 - espressif/mpu6050
 - idf
-manifest_hash: d147cdeb5970e03798fdc7026400e1fb007d55e6c1173835341a54593f4ef116
+manifest_hash: 725e63384f9685435e6c4db0bdeb37d6f57efc03edfd7c0e713c2e56b83afd44
 target: esp32s3
 version: 2.0.0
