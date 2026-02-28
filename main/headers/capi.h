@@ -39,10 +39,12 @@ typedef enum {
     SLEEP_MODE_DEEP
 } sleep_mode_t;
 
+void start8ball();
 //GC9A01 init/paint functions.
 void * initScreen(lcd_config config);
 void * initGenerator(gen_config config);
 void newText(void *genHandle, void *screenHandle);
+void showMessage(void *screenHandle, const char *message);
 void screenPower(void *screenHandle, bool powerOn);
 //MPU6050 sleep loop:
 void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint8_t),mpu_config config);
@@ -50,6 +52,7 @@ void enable_sleep(sleep_mode_t mode);
 
 esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd,gen_config *gen);
 esp_err_t init_usb_msc(void (*mountCB)(void),void (*unmountCB)(void));
+esp_err_t stop_usb_msc();
 
 #if __cplusplus
 }

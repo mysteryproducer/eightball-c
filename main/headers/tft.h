@@ -11,120 +11,119 @@
 using namespace std;
 
 namespace EightBall {
+    
+    class DisplayLine {
+        public:
+            int xPos;
+            int yPos;
+            string line;
+        private:
+    //        ~DisplayLine() {delete line;};
+    };
 
-class DisplayLine {
-    public:
-        int xPos;
-        int yPos;
-        string line;
-    private:
-//        ~DisplayLine() {delete line;};
-};
+    typedef struct {
+        float screen_diameter;// =self.tft.height - 10
+        float radius;// = screen_diameter / 2
+        size_t center_y;// = radius
 
-typedef struct {
-    float screen_diameter;// =self.tft.height - 10
-    float radius;// = screen_diameter / 2
-    size_t center_y;// = radius
+        size_t max_lines;
+        size_t start_y;
+        vector<size_t> *positions;
+    } FontMetrics;
 
-    size_t max_lines;
-    size_t start_y;
-    vector<size_t> *positions;
-} FontMetrics;
-
-typedef struct {
-    size_t x;
-    size_t y;
-    size_t width;
-    size_t height;
-} Rectangle;
-
-typedef struct {
-    uint8_t high;
-    uint8_t low;
-} Colour565;
-
-class EightBallScreen;
-
-enum ScreenState {
-    SCREEN_OFF=0,
-    SCREEN_ON=1,
-    SCREEN_UNINITIALIZED=2,
-    SCREEN_PAINTING=4
-};
-
-class Font {
-    public:
-        static vector<Font *> *loadFonts(vector<string> *files);
-
-        Font(const char *filePath);
-        uint8_t getWidth();
-        uint8_t getHeight();
-        //uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
-        void writeText(uint8_t *buffer, size_t width, size_t height, const vector<DisplayLine> &layout, uint16_t foreColour, uint16_t backColour);
-        void writeTo(uint8_t *buffer, size_t width, size_t height, 
-            const char *text, int x, int y, 
-            uint16_t foreColour, uint16_t backColour);
-
-        inline bool operator<(const Font* other) {
-            return this->width <other->width;
-        }
-        inline bool operator>(const Font* other) { return other < this; }
-        inline bool operator<=(const Font* other) { return !(this > other); }
-        inline bool operator>=(const Font* other) { return !(this < other); }
-    protected:
-        Font();
-        uint8_t width;
-        uint8_t height;
-        map<uint8_t,uint8_t*> bitmaps;
-        int bytesPerChar;
-    private:
-        bool loadFont(const char *path);
-        bool createLetter(char character, uint16_t foreColour, uint16_t backColour, uint8_t *buffer);
-        std::map<char, uint8_t*> charBins;
-};
-
-//bool screenTransferCompleteCallback(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
-
-class EightBallScreen {
-    public:
-        const int BYTES_PER_PIX=2;
-        constexpr static const Colour565 foreColour = {.high=0xff,.low=0xff};
-        constexpr static const uint16_t fg = 0xFFFF;
-        constexpr static const Colour565 backColour = {.high=0x31,.low=0x1e};
-        constexpr static const uint16_t bg = 0x311e;
-
-        EightBallScreen(lcd_config config,esp_err_t *result);
-        esp_err_t setScreenPower(bool screenOn);
-        esp_err_t redrawScreen();
-        esp_err_t paintBackground();
-        esp_err_t drawText(string text);
-        esp_err_t flush();
-        esp_err_t loadFonts(vector<Font *> *fonts);
-        size_t getWidth();
-        size_t getHeight();
-
-//        friend bool screenTransferCompleteCallback(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
-        SemaphoreHandle_t semaphore = NULL;
-    private:
-        esp_lcd_panel_io_handle_t io_handle = NULL;
-        esp_lcd_panel_handle_t panel_handle = NULL;
-        gpio_num_t powerPin = GPIO_NUM_NC;
-        esp_err_t setupScreen(lcd_config config);
-        esp_err_t setupPowerPin();
-        esp_err_t initialiseBuffer();
-
-        vector<Font *> *fonts;
+    typedef struct {
+        size_t x;
+        size_t y;
         size_t width;
         size_t height;
-        uint8_t *screenBuffer = NULL;
-        Rectangle lastDrawBounds;
-        ScreenState screenPowerState;
+    } Rectangle;
 
-        map<int,FontMetrics *> metrics;
-        vector<DisplayLine*> *layoutText(string displayText);
-        FontMetrics *getLinePositions(size_t font_height);
-        bool layoutTextInCircle(vector<string> *words,Font *font,vector<DisplayLine> *result);
-};
+    typedef struct {
+        uint8_t high;
+        uint8_t low;
+    } Colour565;
+
+
+    enum ScreenState {
+        SCREEN_OFF=0,
+        SCREEN_ON=1,
+        SCREEN_UNINITIALIZED=2,
+        SCREEN_PAINTING=4
+    };
+
+    class Font {
+        public:
+            static vector<Font *> *loadFonts(vector<string> *files);
+
+            Font(const char *filePath);
+            uint8_t getWidth();
+            uint8_t getHeight();
+            //uint8_t *write(string text,const Colour565 *foreColour,const Colour565 *backColour);
+            void writeText(uint8_t *buffer, size_t width, size_t height, const vector<DisplayLine> &layout, uint16_t foreColour, uint16_t backColour);
+            void writeTo(uint8_t *buffer, size_t width, size_t height, 
+                const char *text, int x, int y, 
+                uint16_t foreColour, uint16_t backColour);
+
+            inline bool operator<(const Font* other) {
+                return this->width <other->width;
+            }
+            inline bool operator>(const Font* other) { return other < this; }
+            inline bool operator<=(const Font* other) { return !(this > other); }
+            inline bool operator>=(const Font* other) { return !(this < other); }
+        protected:
+            Font();
+            uint8_t width;
+            uint8_t height;
+            map<uint8_t,uint8_t*> bitmaps;
+            int bytesPerChar;
+        private:
+            bool loadFont(const char *path);
+            bool createLetter(char character, uint16_t foreColour, uint16_t backColour, uint8_t *buffer);
+            std::map<char, uint8_t*> charBins;
+    };
+
+    //bool screenTransferCompleteCallback(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
+
+    class EightBallScreen {
+        public:
+            const int BYTES_PER_PIX=2;
+            constexpr static const Colour565 foreColour = {.high=0xff,.low=0xff};
+            constexpr static const uint16_t fg = 0xFFFF;
+            constexpr static const Colour565 backColour = {.high=0x31,.low=0x1e};
+            constexpr static const uint16_t bg = 0x311e;
+
+            EightBallScreen(lcd_config config,esp_err_t *result);
+            esp_err_t setScreenPower(bool screenOn);
+            esp_err_t redrawScreen();
+            esp_err_t paintBackground();
+            esp_err_t drawText(const string &text);
+            esp_err_t flush();
+            esp_err_t loadFonts(vector<Font *> *fonts);
+            size_t getWidth();
+            size_t getHeight();
+
+    //        friend bool screenTransferCompleteCallback(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
+            SemaphoreHandle_t semaphore = NULL;
+        private:
+            esp_lcd_panel_io_handle_t io_handle = NULL;
+            esp_lcd_panel_handle_t panel_handle = NULL;
+            gpio_num_t powerPin = GPIO_NUM_NC;
+            esp_err_t setupScreen(lcd_config config);
+            esp_err_t setupPowerPin();
+            esp_err_t initialiseBuffer();
+
+            vector<Font *> *fonts;
+            size_t width;
+            size_t height;
+            uint8_t *screenBuffer = NULL;
+            Rectangle lastDrawBounds;
+            ScreenState screenPowerState;
+
+            map<int,FontMetrics *> metrics;
+            vector<DisplayLine*> *layoutText(string displayText);
+            FontMetrics *getLinePositions(size_t font_height);
+            bool layoutTextInCircle(vector<string> *words,Font *font,vector<DisplayLine> *result);
+    };
 
 };
 

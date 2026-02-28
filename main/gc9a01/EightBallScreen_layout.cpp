@@ -59,7 +59,7 @@ void calculateBounds(vector<DisplayLine*> *lines, Font *font, Rectangle *result)
     result->height = maxy - miny;
 }
 
-esp_err_t EightBallScreen::drawText(string text) {
+esp_err_t EightBallScreen::drawText(const string &text) {
     vector<string> words;
     splitString(text,&words);
     for (int i=0;i < fonts->size();++i) {

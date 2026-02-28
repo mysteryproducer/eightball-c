@@ -148,10 +148,10 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
     while (true) {
         clear_motion_interrupt();
         if (sleepMode == SLEEP_MODE_NONE) {
-            vTaskDelay(pdMS_TO_TICKS(100)); // Poll every 0.1s
+            vTaskDelay(pdMS_TO_TICKS(1000)); // Poll every 0.1s
             continue;
         }
-        if (!deepSleep || sleepMode == SLEEP_MODE_LIGHT) {
+        if (sleepMode == SLEEP_MODE_LIGHT || !deepSleep) {
             ESP_LOGD(TAG,"Light sleep");
             gpio_wakeup_enable(config.interrupt, GPIO_INTR_HIGH_LEVEL);
             esp_sleep_enable_gpio_wakeup();
@@ -161,7 +161,7 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
             //TODO: make sure we can wake from deep sleep with the MPU6050 interrupt. 
             //This may require additional hardware (e.g. a transistor to pull the interrupt pin low when motion is detected, 
             //since the ESP32 can't wake from deep sleep on a pin that goes high). 
-            //        <- this from AI suggestion, not tested yet.
+            //        ^- this from AI suggestion, not tested yet.
 //            esp_err_t wakeConfigured = esp_deep_sleep_enable_gpio_wakeup(1 << config.interrupt, GPIO_INTR_HIGH_LEVEL); // Wake on HIGH
             // if (wakeConfigured == ESP_OK) {
             //     esp_deep_sleep_start();
@@ -181,7 +181,7 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
             idleCB();
             deepSleep = !deepSleep;
         } else if (status == 0) {
-            continue; // No interrupt, likely a spurious wakeup or in USB mode. Ignore.
+            continue; // No interrupt, spurious wakeup or USB MSC mode loop. Ignore.
         } else {
             ESP_LOGI(TAG, "Woke for unknown reason, INT_STATUS=0x%02X", status);
             otherCB(status);

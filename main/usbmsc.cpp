@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <dirent.h>
+#include "driver/gpio.h"
 #include "capi.h"
 #include "files.h"
 #include "esp_log.h"
@@ -21,7 +22,7 @@ static void (*unmount_callback)(void) = NULL;
 
 static tinyusb_msc_storage_handle_t msc_handle = NULL;
 /* TinyUSB declarations */
-#define EPNUM_MSC       1
+//#define EPNUM_MSC       1
 #define TUSB_DESC_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_MSC_DESC_LEN)
 enum {
     ITF_NUM_MSC = 0,
@@ -67,12 +68,6 @@ static char const *string_desc_arr[] = {
     "888888",                       // 3: Serials
     "Magic 8 Ball Mass Storage",    // 4. MSC
 };
-/*
-void __attribute__((weak)) tud_mount_cb(void) { ESP_LOGI(TAG, "TinyUSB: mounted"); }
-void __attribute__((weak)) tud_umount_cb(void) { ESP_LOGI(TAG, "TinyUSB: unmounted"); }
-void __attribute__((weak)) tud_suspend_cb(bool remote_wakeup_en) { ESP_LOGI(TAG, "TinyUSB: suspended (remote_wakeup=%d)", remote_wakeup_en); }
-void __attribute__((weak)) tud_resume_cb(void) { ESP_LOGI(TAG, "TinyUSB: resumed"); }
-*/
 
 static esp_err_t storage_init_spiflash(wl_handle_t *wl_handle)
 {
@@ -87,6 +82,18 @@ static esp_err_t storage_init_spiflash(wl_handle_t *wl_handle)
     return wl_mount(data_partition, wl_handle);
 }
 
+static void light_it_up(uint8_t level=1, uint8_t pin=7) {
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << pin),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
+    gpio_set_level((gpio_num_t)pin, level);
+}
+
 /**
  * @brief Storage mount changed callback
  *
@@ -94,43 +101,15 @@ static esp_err_t storage_init_spiflash(wl_handle_t *wl_handle)
  * @param event Event information
  * @param arg User argument, provided during callback registration
  */
-static void storage_mount_changed_cb(tinyusb_msc_storage_handle_t handle, tinyusb_msc_event_t *event, void *arg)
+static void storage_mount_changed_cb(tinyusb_event_t *event, void *arg)
 {
-    if (event->id == TINYUSB_MSC_EVENT_MOUNT_COMPLETE) {
-        ESP_LOGI(TAG, "Storage mount changed: %s", (event->mount_point == TINYUSB_MSC_STORAGE_MOUNT_APP) ? "Mounted to APP" : "Mounted to USB");
-        if event->is_mounted {
-            mount_callback();
-        } else {
-            unmount_callback();
-        }
+    if (event->id == TINYUSB_EVENT_ATTACHED) {
+        //light_it_up(1,3);
+        mount_callback();
+    } else {//if (event->id == TINYUSB_EVENT_DETACHED) {
+        light_it_up(1,7);
+        unmount_callback();
     }
-}
-
-// Set mount point to the application and list files in BASE_PATH by filesystem API
-static void _mount(void)
-{
-    ESP_LOGI(TAG, "Mount storage...");
-    ESP_ERROR_CHECK(tinyusb_msc_set_storage_mount_point(msc_handle, TINYUSB_MSC_STORAGE_MOUNT_APP));
-
-    // List all the files in this directory
-    ESP_LOGI(TAG, "\nls command output:");
-    struct dirent *d;
-    DIR *dh = opendir(FS_BASE);
-    if (!dh) {
-        if (errno == ENOENT) {
-            // If the directory is not found
-            ESP_LOGE(TAG, "Directory doesn't exist %s", FS_BASE);
-        } else {
-            // If the directory is not readable then throw error and exit
-            ESP_LOGE(TAG, "Unable to read directory %s", FS_BASE);
-        }
-        return;
-    }
-    // While the next entry is not readable we will print directory files
-    while ((d = readdir(dh)) != NULL) {
-        printf("%s\n", d->d_name);
-    }
-    return;
 }
 
 esp_err_t init_usb_msc(void (*mountCB)(void),void (*unmountCB)(void)) {
@@ -151,26 +130,48 @@ esp_err_t init_usb_msc(void (*mountCB)(void),void (*unmountCB)(void)) {
     // Set the storage medium to the wear leveling handle
     storage_cfg.medium.wl_handle = wl_handle;
 
-//    tinyusb_msc_storage_init_spiflash(&storage_cfg, &msc_handle);
     esp_err_t err = tinyusb_msc_new_storage_spiflash(&storage_cfg, &msc_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize USB MSC storage: %s", esp_err_to_name(err));
         return err;
     }
     ESP_LOGI(TAG, "MSC storage created (handle=%p)", msc_handle);
-    ESP_ERROR_CHECK(tinyusb_msc_set_storage_callback(storage_mount_changed_cb, NULL));
-    // Re-mount to the APP
-    //_mount();
 
     tinyusb_config_t tusb_cfg = TINYUSB_DEFAULT_CONFIG();
-
     tusb_cfg.descriptor.device = &descriptor_config;
     tusb_cfg.descriptor.full_speed_config = msc_fs_configuration_desc;
     tusb_cfg.descriptor.string = string_desc_arr;
     tusb_cfg.descriptor.string_count = sizeof(string_desc_arr) / sizeof(string_desc_arr[0]);
+    tusb_cfg.event_cb = storage_mount_changed_cb;
+    tusb_cfg.event_arg = NULL;
 
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
     ESP_LOGI(TAG, "tinyusb driver installed");
 
     return ESP_OK;
+}
+
+esp_err_t stop_usb_msc() {
+    esp_err_t err = tinyusb_driver_uninstall();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to uninstall tinyusb driver: %s", esp_err_to_name(err));
+        return err;
+    }
+    if (msc_handle) {
+        err = tinyusb_msc_delete_storage(msc_handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to delete MSC storage: %s", esp_err_to_name(err));
+            return err;
+        }
+        msc_handle = NULL;
+    }
+    if (wl_handle != WL_INVALID_HANDLE) {
+        err = wl_unmount(wl_handle);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to unmount wear levelling: %s", esp_err_to_name(err));
+            return err;
+        }
+        wl_handle = WL_INVALID_HANDLE;
+    }
+    return err;
 }

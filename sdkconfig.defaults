@@ -1,9 +1,15 @@
 # This file was generated using idf.py save-defconfig. It can be edited manually.
 # Espressif IoT Development Framework (ESP-IDF) Project Minimal Configuration
 #
-CONFIG_TINYUSB_MSC_ENABLED=y
-CONFIG_TINYUSB_DESC_PRODUCT_STRING="Magic 8 Ball"
 
+CONFIG_CXX_EXCEPTIONS=y
+
+CONFIG_TINYUSB_MSC_ENABLED=y
+CONFIG_TINYUSB_DESC_MANUFACTURER_STRING="Chris Arnold"
+CONFIG_TINYUSB_DESC_PRODUCT_STRING="Magic 8 Ball"
+CONFIG_TINYUSB_DESC_SERIAL_STRING="88888888"
+CONFIG_TINYUSB_DESC_CDC_STRING="Espressif CDC Device"
+CONFIG_TINYUSB_DESC_MSC_STRING="Magic 8 Ball Storage"
 
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
@@ -14,5 +20,3 @@ CONFIG_WL_SECTOR_MODE_PERF=y
 
 CONFIG_FATFS_LFN_HEAP=y
 
-# On chips with USB Serial JTAG, disable secondary console which does not make sense when using console component
-CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
