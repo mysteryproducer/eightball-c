@@ -17,27 +17,27 @@ using namespace EightBall;
 mpu_config mpuConfig;
 lcd_config config;
 gen_config genConfig;
-static EightBallScreen *screenHandle = NULL;
-static TextGenerator *genHandle = NULL;
+static EightBallScreen *screen = NULL;
+static TextGenerator *textGen = NULL;
 static bool screenPowered = false;
 
 void showString(const string &message) {
     ESP_LOGI("main","New text: '%s'",message.c_str());
-    screenHandle->paintBackground();
-    screenHandle->drawText(message);
-    screenHandle->flush();
+    screen->paintBackground();
+    screen->drawText(message);
+    screen->flush();
 }
 void showMessage(const char *message) {
     showString(string(message));
 }
 void newText() {
-    string text = genHandle->generateNext();
+    string text = textGen->generateNext();
     showString(text);
 }
 
 void idleCallback() {
     screenPowered = !screenPowered;
-    screenHandle->setScreenPower(screenPowered);
+    screen->setScreenPower(screenPowered);
     if (screenPowered) {
         newText();
     }
@@ -72,13 +72,13 @@ void start8ball(void) {
         readConfigFile("/files/config.json", &mpuConfig, &config, &genConfig);
         ESP_LOGI(TAG, "Starting GC9A01");
         esp_err_t result;
-        screenHandle = new EightBallScreen(config, &result);
-        if (screenHandle == NULL || result != ESP_OK) {
+        screen = new EightBallScreen(config, &result);
+        if (screen == NULL || result != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize screen");
             return;
         }
-        genHandle = initGenerator(genConfig);
-        if (genHandle == NULL) {
+        textGen = initGenerator(genConfig);
+        if (textGen == NULL) {
             ESP_LOGE(TAG, "Failed to initialize text generator");
             return;
         }
