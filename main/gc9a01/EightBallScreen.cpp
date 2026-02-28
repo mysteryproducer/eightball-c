@@ -12,6 +12,7 @@
 
 #include "capi.h"
 #include "tft.h"
+#include <vector>
 #include <algorithm>
 
 static const char *TAG = "8 ball TFT";
@@ -38,6 +39,13 @@ EightBallScreen::EightBallScreen(lcd_config config,esp_err_t *result) {
         this->screenPowerState = (ScreenState)(this->screenPowerState & (0xFF ^ SCREEN_UNINITIALIZED));
     }
     *result = this->setupScreen(config);
+    for (int i=0;i<config.fontCount;++i) {
+        string fullPath = string("/files/") + string(config.fontFiles[i]);
+        this->fonts.push_back(new Font(fullPath.c_str()));
+    }
+    std::sort(this->fonts.begin(), this->fonts.end(), [](Font *a, Font *b) {
+        return a->getHeight() > b->getHeight();
+    });
 }
 
 esp_err_t EightBallScreen::setupPowerPin() {
@@ -91,6 +99,7 @@ esp_err_t EightBallScreen::setScreenPower(bool power_on) {
 esp_err_t EightBallScreen::initialiseBuffer() {
     esp_err_t result=ESP_OK;
     // Buffer is static now; attached to screen instance. This check no longer makes sense.
+    // Keep it in place as a safeguard.
     if (this->screenBuffer!=NULL) {
         ESP_LOGW("TAG","Begin paint with non-null buffer. Keeping existing buffer.");
         return ESP_ERR_INVALID_STATE;
@@ -156,8 +165,6 @@ esp_err_t EightBallScreen::setupScreen(lcd_config config) {
     result = esp_lcd_panel_disp_on_off(panel_handle, true);
     if (result!=ESP_OK) { ESP_LOGW(TAG, "fail turn on screen"); }
 
-    //this->screenBuffer = NULL;
-    //this->byte_per_pixel = LCD_BIT_PER_PIXEL / 8;
     if (result == ESP_OK) {
         result = setScreenPower(true);
         ESP_LOGI(TAG, "Screen initialized. Drawing background.");
@@ -201,20 +208,12 @@ esp_err_t EightBallScreen::redrawScreen() {
 
 esp_err_t EightBallScreen::flush() {
     esp_err_t res = esp_lcd_panel_draw_bitmap(this->panel_handle, 0, 0, this->width, this->height, this->screenBuffer);
-    //vTaskDelay(pdMS_TO_TICKS(100)); // allow some time for transfer to complete
     this->semaphore = xSemaphoreCreateBinary();
     xSemaphoreTake(this->semaphore, pdMS_TO_TICKS(250));
     if (res != ESP_OK) {
         ESP_LOGW(TAG, "Draw fail: %d", res);
     }
-//    free(this->screenBuffer);
-//    this->screenBuffer = NULL;
     return res;
-}
-
-esp_err_t EightBallScreen::loadFonts(vector<Font *> *fonts) {
-    this->fonts = fonts;
-    return ESP_OK;
 }
 
 size_t EightBallScreen::getWidth() {

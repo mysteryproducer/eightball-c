@@ -82,6 +82,18 @@ esp_err_t readConfigFile(const char *filename,mpu_config *mpu,lcd_config *lcd,ge
     json_obj_get_string(&context,"generator_type",gen->gen_type,12);
     json_obj_get_string(&context,"generator_args",gen->args,64);
 
+    int fontCount;
+    json_obj_get_array(&context,"fonts",&fontCount);
+    lcd->fontCount = (uint8_t)fontCount;
+    lcd->fontFiles = new char*[fontCount];
+    for (int i=0;i<fontCount;++i) {
+        char fontPath[64];
+        json_arr_get_string(&context,i,fontPath,64);
+//        ESP_LOGD(TAG,"Font %d: %s",i,fontPath);
+        lcd->fontFiles[i] = new char[strlen(fontPath)+1];
+        strncpy(lcd->fontFiles[i], fontPath, strlen(fontPath)+1);
+    }
+
     json_parse_end(&context);
 
     close_filesystem();

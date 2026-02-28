@@ -19,6 +19,8 @@ typedef struct {
     uint16_t width;
     uint16_t height;
     uint32_t freq_hz;
+    uint8_t fontCount;
+    char **fontFiles;
 } lcd_config;
 
 typedef struct {
@@ -40,12 +42,6 @@ typedef enum {
 } sleep_mode_t;
 
 void start8ball();
-//GC9A01 init/paint functions.
-void * initScreen(lcd_config config);
-void * initGenerator(gen_config config);
-void newText(void *genHandle, void *screenHandle);
-void showMessage(void *screenHandle, const char *message);
-void screenPower(void *screenHandle, bool powerOn);
 //MPU6050 sleep loop:
 void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint8_t),mpu_config config);
 void enable_sleep(sleep_mode_t mode);

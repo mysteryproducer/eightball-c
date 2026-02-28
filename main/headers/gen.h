@@ -17,7 +17,12 @@ namespace EightBall {
             virtual string generateNext() {return "";};
             virtual ~TextGenerator() {};
     };
+};
 
+//Factory function to create a TextGenerator based on the provided configuration
+EightBall::TextGenerator *initGenerator(gen_config config);
+
+namespace EightBall {
     class TestGenerator : public TextGenerator {
         public:
         TestGenerator() {};

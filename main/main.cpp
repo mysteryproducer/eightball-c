@@ -21,11 +21,25 @@ static EightBallScreen *screenHandle = NULL;
 static TextGenerator *genHandle = NULL;
 static bool screenPowered = false;
 
+void showString(const string &message) {
+    ESP_LOGI("main","New text: '%s'",message.c_str());
+    screenHandle->paintBackground();
+    screenHandle->drawText(message);
+    screenHandle->flush();
+}
+void showMessage(const char *message) {
+    showString(string(message));
+}
+void newText() {
+    string text = genHandle->generateNext();
+    showString(text);
+}
+
 void idleCallback() {
     screenPowered = !screenPowered;
-    screenPower(screenHandle, screenPowered);
+    screenHandle->setScreenPower(screenPowered);
     if (screenPowered) {
-        newText(genHandle, screenHandle);
+        newText();
     }
 }
 
@@ -33,7 +47,7 @@ void shakeCallback() {
     if (!screenPowered) {
         idleCallback();
     }
-    newText(genHandle, screenHandle);
+    newText();
 }
 
 void otherCallback(uint8_t status) {
@@ -45,7 +59,7 @@ void usb_mounted() {
     ESP_LOGI(TAG, "USB mounted");
     msc_mounted=true;
     enable_sleep(SLEEP_MODE_NONE);
-    showMessage(screenHandle, "USB Storage mode");
+    showMessage("USB Storage mode");
 }
 void usb_unmounted() {
     ESP_LOGI(TAG, "USB unmounted");
@@ -57,22 +71,23 @@ void start8ball(void) {
     try {
         readConfigFile("/files/config.json", &mpuConfig, &config, &genConfig);
         ESP_LOGI(TAG, "Starting GC9A01");
-        screenHandle = initScreen(config);
-        if (screenHandle == NULL) {
+        esp_err_t result;
+        screenHandle = new EightBallScreen(config, &result);
+        if (screenHandle == NULL || result != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize screen");
             return;
         }
-        genHandle = (TextGenerator *)initGenerator(genConfig);
+        genHandle = initGenerator(genConfig);
         if (genHandle == NULL) {
             ESP_LOGE(TAG, "Failed to initialize text generator");
             return;
         }
-        newText(genHandle, screenHandle);
+        newText();
     } catch (const std::exception &e) {
         ESP_LOGE(TAG, "Exception during initialization: %s", e.what());
     }
     ESP_LOGI(TAG, "Starting USB MSC; eject the device to enable motion detection");
-    init_usb_msc(&usb_mounted, &usb_unmounted);
+    init_usb_msc(usb_mounted, usb_unmounted);
     for (int i=0;msc_mounted || (i<AWAKE_SECONDS);++i) {
         ESP_LOGI(TAG, "%i", AWAKE_SECONDS-i);
         vTaskDelay(pdMS_TO_TICKS(1000));
@@ -82,4 +97,15 @@ void start8ball(void) {
     // init_usb_msc(&usb_mounted, &usb_unmounted);
     ESP_LOGI(TAG, "Starting MPU6050 loop");
     wake_loop(&shakeCallback, &idleCallback, &otherCallback, mpuConfig);
+}
+
+TextGenerator *initGenerator(gen_config config) {
+    string filePath = string(FS_BASE) + "/"s + string(config.args);
+    if (strncasecmp(config.gen_type, GEN_TYPE_FILE, 4) == 0) {
+        return new LineReader(filePath.c_str());
+    }
+    if (strncasecmp(config.gen_type, GEN_TYPE_TEST, 4) == 0) {
+        return new TestGenerator();
+    }
+    return new GrammarGenerator(filePath.c_str());
 }

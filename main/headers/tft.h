@@ -8,9 +8,12 @@
 #include "gen.h"
 #include "capi.h"
 
+void showMessage(const char *message);
+
 using namespace std;
 
 namespace EightBall {
+
     
     class DisplayLine {
         public:
@@ -53,7 +56,7 @@ namespace EightBall {
 
     class Font {
         public:
-            static vector<Font *> *loadFonts(vector<string> *files);
+//            static vector<Font *> *loadFonts(vector<string> *files);
 
             Font(const char *filePath);
             uint8_t getWidth();
@@ -98,7 +101,7 @@ namespace EightBall {
             esp_err_t paintBackground();
             esp_err_t drawText(const string &text);
             esp_err_t flush();
-            esp_err_t loadFonts(vector<Font *> *fonts);
+//            esp_err_t loadFonts(vector<Font *> *fonts);
             size_t getWidth();
             size_t getHeight();
 
@@ -112,7 +115,7 @@ namespace EightBall {
             esp_err_t setupPowerPin();
             esp_err_t initialiseBuffer();
 
-            vector<Font *> *fonts;
+            vector<Font *> fonts;
             size_t width;
             size_t height;
             uint8_t *screenBuffer = NULL;

@@ -62,8 +62,8 @@ void calculateBounds(vector<DisplayLine*> *lines, Font *font, Rectangle *result)
 esp_err_t EightBallScreen::drawText(const string &text) {
     vector<string> words;
     splitString(text,&words);
-    for (int i=0;i < fonts->size();++i) {
-        Font *font = fonts->at(i);
+    for (int i=0;i < fonts.size();++i) {
+        Font *font = fonts.at(i);
         vector<DisplayLine> layout;
         bool ok = layoutTextInCircle(&words,font,&layout);
         if (ok) {

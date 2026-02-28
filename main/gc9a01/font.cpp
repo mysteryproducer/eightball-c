@@ -14,22 +14,6 @@ using namespace EightBall;
 
 static const char *TAG = "8 ball Font";
 
-vector<Font *> *EightBall::Font::loadFonts(vector<string> *files) {
-    vector<Font *> *result = new vector<Font *>();
-    if (init_filesystem() != ESP_OK) {
-        ESP_LOGE(TAG,"File system setup fail!");
-        return NULL;
-    }
-    for (int i=0;i<files->size();++i) {
-        Font *f = new Font((*files)[i].c_str());
-        result->push_back(f);
-    }
-    sort(result->begin(),result->end());
-    reverse(result->begin(),result->end());
-    close_filesystem();
-    return result;
-}
-
 Font::Font(const char *filePath) {
     this->loadFont(filePath);
 }
@@ -40,7 +24,8 @@ uint8_t Font::getHeight() {
     return this->height;
 }
 bool Font::loadFont(const char *path) {
-    ESP_LOGI(TAG,"loading font %s",path);
+    ESP_LOGD(TAG,"loading font %s",path);
+    init_filesystem();
     bool result=false;
     ifstream infile(path,ios::in|ios::binary);
     char *sz_byte=new char[1];
@@ -68,6 +53,7 @@ bool Font::loadFont(const char *path) {
         ESP_LOGE(TAG,"Couldn't open file: %s",path);
     }
     delete[] sz_byte;
+    close_filesystem();
     return result;
 }
 
