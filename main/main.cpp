@@ -69,6 +69,7 @@ void usb_unmounted() {
 }
 
 void start8ball(void) {
+    ESP_LOGI(TAG, "Anfang");
 #ifdef CONFIG_IDF_TARGET_ESP32S3
     try {
 #endif
@@ -78,14 +79,13 @@ void start8ball(void) {
         screen = new EightBallScreen(config, &result);
         if (screen == NULL || result != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize screen");
-            return;
         }
         textGen = initGenerator(genConfig);
         if (textGen == NULL) {
             ESP_LOGE(TAG, "Failed to initialize text generator");
-            return;
+        } else {
+            newText();
         }
-        newText();
 #ifdef CONFIG_IDF_TARGET_ESP32S3
     } catch (const std::exception &e) {
         ESP_LOGE(TAG, "Exception during initialization: %s", e.what());
@@ -107,7 +107,11 @@ void start8ball(void) {
 }
 
 TextGenerator *initGenerator(gen_config config) {
-    string filePath = string(FS_BASE) + "/"s + string(config.args);
+    if (config.arg_count < 1) {
+        ESP_LOGE(TAG, "Generator config missing required 'args' array with at least 1 element");
+        return NULL;
+    }
+    string filePath = string(FS_BASE) + "/"s + string(config.args[0]);
     if (strncasecmp(config.gen_type, GEN_TYPE_FILE, 4) == 0) {
         return new LineReader(filePath.c_str());
     }

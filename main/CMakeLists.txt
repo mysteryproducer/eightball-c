@@ -19,7 +19,8 @@ idf_component_register(SRCS ${COMPONENT_SRCS}
                             "headers"
                     REQUIRES ${REQUIRED_COMPONENTS}
                     )
-if(CONFIG_IDF_TARGET_ESP32S3) 
-        fatfs_create_spiflash_image(storage ./files FLASH_IN_PROJECT)
+if(CONFIG_IDF_TARGET_ESP32C3) 
+        #fatfs_create_spiflash_image(storage ./files FLASH_IN_PROJECT)
+        #fatfs_create_rawflash_image(storage ./files FLASH_IN_PROJECT)
 endif()
-# fatfs_create_rawflash_image(storage ./files FLASH_IN_PROJECT)
+

@@ -24,15 +24,23 @@ typedef struct {
 } lcd_config;
 
 typedef struct {
+    uint8_t threshold;
+    uint8_t duration;
+} motion_detection_config;
+
+typedef struct {
     gpio_num_t power;
     gpio_num_t interrupt;
     gpio_num_t sda;
     gpio_num_t scl;
+    motion_detection_config motion;
+    motion_detection_config zero_motion;
 } mpu_config;
 
 typedef struct {
     char gen_type[12];
-    char args[64];
+    char** args;
+    uint8_t arg_count;
 } gen_config;
 
 typedef enum {

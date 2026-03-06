@@ -1,23 +1,33 @@
 {
-    "mpu_power" : 5,
-    "interrupt" : 21,
-    "scl" : 7,
-    "sda" : 8,
-
-    "clk" : 0,
-    "mosi" : 1,
-    "cs" : 3,
-    "dc" : 2,
-    
-    "reset" : 4,
-    "screen_power" : 10,
-    "width" : 240,
-    "height" : 240,
-    "spifreq_hz" : 40000000,
-
-    "generator_type" : "cfg",
-    "generator_args" : "dsm5.txt",
-    "fonts" : ["monaco14.font",
-        "monaco20.font",
-        "monaco28.font"]
+    "accelerometer" : {
+        "type" : "mpu6050",
+        "mpu_power" : 5,
+        "interrupt" : 21,
+        "scl" : 7,
+        "sda" : 8,
+        "motion" : {
+            "threshold" : 6,
+            "duration" : 3
+        },
+        "zero_motion" : {
+            "threshold" : 4,
+            "duration" : 5
+        }
+    },
+    "screen" : {
+        "clk" : 0,
+        "mosi" : 1,
+        "dc" : 2,
+        "cs" : 3,
+        "reset" : 4,
+        "screen_power" : 10,
+        "width" : 240,
+        "height" : 240,
+        "spifreq_hz" : 40000000,
+        "fonts" : ["monaco14.font","monaco20.font","monaco28.font"]
+    },
+    "generator" : {
+        "type" : "cfg",
+        "args" : ["dsm5.txt"]
+    }
 }

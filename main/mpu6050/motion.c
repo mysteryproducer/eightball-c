@@ -72,7 +72,7 @@ static void i2c_master_init(mpu_config config) {
     ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_handle, &dev_cfg, &mpu6050_handle));
 }
 
-static void mpu6050_enter_wake_on_motion(void) {
+static void mpu6050_enter_wake_on_motion(mpu_config config) {
     ESP_LOGI(TAG, "Configuring MPU6050 for low-power wake-on-motion");
 
     // Wake up device
@@ -89,13 +89,13 @@ static void mpu6050_enter_wake_on_motion(void) {
     // Set accelerometer range ±2g
     i2c_write_byte(MPU6050_REG_ACCEL_CONFIG, 0x00);
     // Motion threshold: lower = more sensitive
-    i2c_write_byte(MPU6050_REG_MOT_THR, 6);
-    i2c_write_byte(MPU6050_REG_MOT_DUR, 3); // 3*1ms=3ms
+    i2c_write_byte(MPU6050_REG_MOT_THR, config.motion.threshold);
+    i2c_write_byte(MPU6050_REG_MOT_DUR, config.motion.duration); // 3*1ms=3ms
     // Motion threshold: lower = more sensitive
-    i2c_write_byte(MPU6050_REG_ZRMOT_THR, 4);
+    i2c_write_byte(MPU6050_REG_ZRMOT_THR, config.zero_motion.threshold);
     // i2c_write_byte(MPU6050_REG_ZRMOT_DUR, 0x78); // 0x78*64ms=5s
     // duration is in greater increments during cycle mode.
-    i2c_write_byte(MPU6050_REG_ZRMOT_DUR, 0x05);
+    i2c_write_byte(MPU6050_REG_ZRMOT_DUR, config.zero_motion.duration);
 
     // Configure motion detection control:
     // Enable accelerometer hardware for motion detection
@@ -142,7 +142,7 @@ void wake_loop(void (*shakeCB)(void), void (*idleCB)(void), void (*otherCB)(uint
     gpio_pullup_en(config.interrupt);
     gpio_pulldown_dis(config.interrupt);
 
-    mpu6050_enter_wake_on_motion();
+    mpu6050_enter_wake_on_motion(config);
     bool deepSleep=false;
 
     while (true) {
