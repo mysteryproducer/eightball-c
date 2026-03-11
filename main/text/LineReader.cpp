@@ -36,7 +36,7 @@ string LineReader::generateNext() {
     buffer[bytesRead] = '\0';
     fclose(f);
     close_filesystem();
-    return string(buffer);
+    return trim(string(buffer));
 }
 
 void LineReader::readOffsets() {

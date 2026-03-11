@@ -16,6 +16,16 @@ namespace EightBall {
         public:
             virtual string generateNext() {return "";};
             virtual ~TextGenerator() {};
+        protected:
+            const string whitespace = " \t\n\r\f\v";
+            string trim(const string& str) {
+                size_t start = str.find_first_not_of(whitespace);
+                if (start == std::string::npos) {
+                    return ""; // String is all whitespace
+                }
+                size_t end = str.find_last_not_of(whitespace);
+                return str.substr(start, end - start + 1);
+            }
     };
 };
 

@@ -74,16 +74,6 @@ string GrammarGenerator::getRandomElement(const vector<string> &items) {
     return items.at(index);
 }
 
-const string whitespace = " \t\n\r\f\v";
-string trim(const string& str) {
-    size_t start = str.find_first_not_of(whitespace);
-    if (start == std::string::npos) {
-        return ""; // String is all whitespace
-    }
-    size_t end = str.find_last_not_of(whitespace);
-    return str.substr(start, end - start + 1);
-}
-
 void GrammarGenerator::readFile(const char* filename) {
     ESP_LOGD(TAG,"Reading file %s",filename);
     if (init_filesystem() != ESP_OK) {
